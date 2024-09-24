@@ -10,6 +10,15 @@ Existen varias posibilidades, aquí nos centramos sobre:
 - [`Basemap`](https://matplotlib.org/basemap)
 que utilizamos con Matplotlib.
 
+### Paquetes
+
+- netCDF4
+- urllib
+- numpy
+- matplotlib
+- cartopy
+- Basemap
+
 ## Datos temporales en Python (30’+preguntas).
 
 ## Informes en Python (30’+preguntas).
