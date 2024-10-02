@@ -21,4 +21,19 @@ que utilizamos con Matplotlib.
 
 ## Datos temporales en Python (30’+preguntas).
 
+El objetivo de esta parte es presentar herramientas básicas para el manejo de datos temporales. Como ejemplo tomaremos datos de temperatura oceánica superficial.
+
+Principalmente usaremos xarray, aunque también podríamos usar pandas.
+
+### Paquetes
+
+- xarray
+- pandas
+- matplotlib
+    
+### Extras
+
+- seaborn
+- scipy.interpolate
+
 ## Informes en Python (30’+preguntas).
