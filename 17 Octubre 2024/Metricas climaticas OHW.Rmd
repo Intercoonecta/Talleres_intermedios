@@ -1,0 +1,272 @@
+---
+title: "Métricas climáticas del Mar Mediterráneo Occidental"
+author: "Marina Sanz-Martín"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    fig_caption: yes
+    highlight: tango
+    theme: united
+    code_folding: hide
+    toc: yes
+    toc:depth: 5
+    toc:float: yes
+    df_print: paged
+---
+
+Este documento proporciona el código de R necesario para calcular varias métricas climáticas del paquete R VoCC, desarrollado en el artículo García Molinos et al. (2019) y aplicado en el artículo Sanz-Martín et al. (2024), además de en otros muchos artículos. Consúltalos para obtener información más detallada. 
+
+Para este tutorial, necesitamos los siguientes paquetes que debemos conseguir:
+
+```{r instalar paquetes, message=FALSE, include=FALSE}
+
+# install.packages('terra', repos='https://rspatial.r-universe.dev')
+# install.packages("rgdal")
+# # devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
+# 
+# install.packages("devtools")
+# 
+# # Entonces podemos instalar vocc:
+# devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
+# 
+# # Otra opción si las anteriores no funcionan
+# install.packages("remotes")
+# remotes::install_github("JorGarMol/VoCC")
+# 
+# # Otra opción más que requerirá menos tiempo
+# library(VoCC)
+# citation("VoCC") # para citar el uso de este paquete concreto
+# 
+# suppressWarnings(library(VoCC)) 
+# suppressWarnings(library(rgeos)) 
+# suppressWarnings(library(scales))
+# suppressWarnings(library(data.table))
+# suppressWarnings(library(mapplots))
+# suppressWarnings(library(ggplot2))
+# suppressWarnings(library(repmis))
+# 
+# library(chron)
+# library(maps)
+# library(shapefiles)
+# library(rgdal)
+# 
+# library(RColorBrewer)
+# library(raster)
+# library(cartography)
+# library(gstat)
+# 
+# library(mapdata)
+# library(maptools)
+
+```
+
+
+```{r paquetes ya instalados, include=FALSE} 
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning=FALSE,
+                      fig.align = "center") # para cargar todas las librerías necesarias dando solo a play del chunk
+library(chron)
+library(maps)
+library(shapefiles)
+library(rgdal)
+library(ggplot2)
+library(VoCC)
+library(rgeos)
+library(scales)
+library(data.table)
+library(mapplots)
+library(repmis)
+library(sp)
+library(RColorBrewer)
+
+library(raster)
+library(cartography)
+library(gstat)
+
+library(maps)
+library(mapdata)
+library(maptools)
+```
+
+También necesitamos un conjunto de datos de temperatura superficial que se puedan descargar de servidores de datos satelitales. En este caso utilizaremos Copernicus (página web https://data.marine.copernicus.eu/product/SST_MED_SST_L4_REP_OBSERVATIONS_010_021/description) pero que también están disponibles en el repositorio de datos de Intercoonecta Github (https://github.com/xxx completar cuando esté subido). 
+
+```{r abrir datos nc, include=FALSE}
+# tenemos que descargarnos datos de SST de un servidor de datos, por ejemplo Copernicus 
+## aquí se descargado datos de satélite de reanalisis de modelos 
+# fuente de informaciób: https://data.marine.copernicus.eu/product/SST_MED_SST_L4_REP_OBSERVATIONS_010_021/description
+# cuidado porque a veces copernicus descataloga productos y desaparecen cosas y luego tienes que pedirles por email y es más dificil. Es preferible que cuando desgargues unos datos guardes toda la información sobre ellos para poder explicar posteriormente el trabajo que hay hecho, citar la referencia o pedir una ampliación de ese mismo producto. 
+
+# aquí usamos datos de reanálisis de modelos si posteriormemente quisiésemos hacer proyecciones a futuro, los datos más extensos se facilitan como reanálisis, y es más mantenible en el tiempo (ejemplos de artículos García Molinos et al., 2019; García Molinos et al., 2020; Brito-Morales et al., 2018, o Arafeh-Dalmau et al., 2021)
+
+# Otras personas expertas en oceanografía física opinan que es preferible utilizar la SST in situ en lugar de la que aportan los modelos. Esta sería otra opción, pero en este caso utilizaremos el producto citado.
+
+# En este caso utilizaremos los datos del 2000 al 2020, pero sería mejor utilizar datos hasta 2023 o 2024. 
+
+# Descargaremos un fichero NC
+# Reemplaza el directorio a la carperta en la que vayas a trabajar
+
+setwd("~/Desktop/VICENÇ MUT inicio/Landings/SST data daily")
+sst  <- "2000 to 2020_cmems_SST_MED_SST_L4_REP_OBSERVATIONS_010_021_1698241778690.nc" #data from 2000 to 2020
+sst 
+
+# pasa a formato raster brick
+sst_dias <- brick(sst)
+sst_dias
+
+# aquí puedes ver la información que has descargado:
+
+# class      : RasterBrick 
+# dimensions : 206, 277, 57062, 7671  (nrow, ncol, ncell, nlayers)
+# resolution : 0.05004596, 0.05015774  (x, y)
+# extent     : -7.79051, 6.07222, 33.31002, 43.64251  (xmin, xmax, ymin, ymax)
+# crs        : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 
+# source     : 2000 to 2020_cmems_SST_MED_SST_L4_REP_OBSERVATIONS_010_021_1698241778690.nc 
+# names      : X2000.01.01, X2000.01.02, X2000.01.03, X2000.01.04, X2000.01.05, X2000.01.06, X2000.01.07, X2000.01.08, X2000.01.09, X2000.01.10, X2000.01.11, X2000.01.12, X2000.01.13, X2000.01.14, X2000.01.15, ... 
+# Date/time  : 2000-01-01, 2020-12-31 (min, max)
+# varname    : analysed_sst 
+
+
+# desde 2000 a 2020 son 21 años de datos
+# 21 años, por 12 meses, por 30 o 31 días
+21*12*30 # 7560 nlayers, cada capa o layer es un día, por lo tanto hay exctamente 7671 nlayers indicado en dimensions
+
+# con una resolución de 0.05 grados de grid de malla
+# si 1º = 111 km
+# entonces 0.04º son 4.44 km
+
+111*0.04/1 # 4.44 km
+
+names(sst_dias)
+dim(sst_dias)
+plot(sst_dias) # cada layer es un mes
+plot(sst_dias[[1]])
+```
+
+Cortar el póligono para ver solo la zona que nos interesa 
+
+```{r cortar poligono, include=FALSE}
+
+# Si el mapa de datos es es muy grande y lo queremos cortar
+# med_pol <- as(extent(-7.36,7, 30, 42.5), 'SpatialPolygons') # estas son las coordenadas
+
+# si queremos jugar con las coordenadas, modificamos estos números
+# ?extent # más información sobre cómo hacerlo en inglés
+
+# crs(med_pol) <- crs(sst_dias) # para poner el sistema de coordenadas de referencia igual que en el fichero sst_dias, coordinate reference system (CRS) of a raster object.
+
+# sst_med <- crop(sst_dias, med_pol) # lo corto solo para el mediterráneo occidental, no me interesa el atlántico
+# ?crop #del paquete raster
+
+```
+
+Cálculo de promedios en función de la frecuencia temporal de nuestros datos
+
+```{r sumSeries, include=FALSE}
+#  la función sumSeries te calcula el promedio anual, o mensual, pasando de días a meses, o meses a años, lo que tu quieras
+# ?sumSeries 
+# aquí tenemos toda la información de esta función en inglés
+# para pasar de ºK a ºC hago esto: colMeans(x- 273.15, na.rm = TRUE)
+# freqin es la frecuencial inicial, en ese caso días, days
+# freqioutes la frecuencial final, en ese caso años, years
+
+# Promedio anual de SST (K), conviertiendo días en años y pasando de ºK a ºC:
+yr_sst <- sumSeries(sst_dias,
+                       p = "2000-01/2020-12", # año-mes inicial, año-mes final de mi serie de datos
+                       yr0 = "2000-01-01", # día inicial desde la que quiero que comience los cálculos
+                       l = nlayers(sst_dias), # mi fichero
+                       fun = function(x) colMeans(x- 273.15, na.rm = TRUE), freqin = "days", freqout = "years")
+
+yr_sst
+names(yr_sst)
+dim(yr_sst) # nlayers= 21, 21 años
+```
+
+Agregación de las celdas
+
+```{r agregamos celdas, include=FALSE}
+# Agregar celdas a 10 (fact = 10) : de resolución 0.04º a  0.5º, dicho de otro modo 0.5 x 0.5, o bien 
+0.5*111 # 55.5 km x 55.5 km
+
+agg_yr_sst <- aggregate(yr_sst, fact = 10) # 0.5º, podemos jugar con el fact = número, para ver cómo cambia la resolución
+agg_yr_sst
+
+plot(agg_yr_sst[[1]])
+
+# Otro ejemplo, agregar celdas a 21 para pasar de resolución 0.04º a  1º
+# agg_annual_ss <- aggregate(annual_ss, fact = 21) # at 1º cel
+
+# agg_yr_sst 
+
+# de este fichero es del que habría que extraer el valor de Tmean para cada año y cada MPA. 
+# calcular el valor en un punto concreto a un radio, de un año concreto, hay varias opciones de hacerlo. Tendrás que buscarlo y resolver dudas de conmigo de cómo se haría. Te dejo aquí unas funciones de cómo creo yo que podría hacerse.
+
+```
+
+Cálculo de la tendencia temporal
+```{r tendencia temporal}
+
+# para calcular el promedio de todos los años. Pero eso no lo utilizaremos más adelante. 
+mean_all <- mean(agg_yr_sst)
+plot(mean_all, main ="Promedio SST (ºC) 2000 a 2020") 
+
+# para calcular la tendencia climática local 
+?tempTrend
+
+# como resultado obtenemos 3 capas: spl Trends en ºC/yr;  se Trends standard error; sig Trends statistical significance
+# slp simple linear pattern, es decir la pendiente de la regresión linear en cada celda
+
+temp_trend <- tempTrend(agg_yr_sst, th = 10) # 3 nlayers slp, se y significance; 101.640 celdas
+temp_trend
+
+plot(temp_trend, main = c("Temporal SST trend (ºC/yr)", "SE", "p-value"))
+
+# otra manera de dibujarlo
+plot(temp_trend[[1]], main = "Temporal SST trend (ºC/yr)")
+plot(temp_trend[[2]], main = "SE Standard Error")
+plot(temp_trend[[3]], main = "p-value")
+```
+
+Cálculo del gradiente espacial
+```{r gradiente espacial}
+
+# Calcular el gradiente espacial, promediado para toda la serie temporal. Para más información sobre cómo se calcula, ver la presentación en PowerPoint Métricas climáticas
+
+?spatGrad
+spa_grad <- spatGrad(agg_yr_sst, th = 0.0001, projected = FALSE)
+spa_grad # obtienes el gradiente y el ángulo, pero solo utilizaremos el gradiente
+
+plot(spa_grad)
+plot(spa_grad$Grad, main = "Thermal spatial gradient (ºC/Km)")
+```
+
+Cálculo de la velocidad climática (gradient-based velocity gVoCC)
+
+```{r gVoCC}
+# Ahora calcularemos la velocidad climática basada en el gradiente, o también llamado método de las pendientes, porque está basado en el cálculo de las tendencias temporales (tempTrend) a través de las series temporales de temperaturas de cada año, y la pendiente de la recta de regresión en cada celda focal o píxel. 
+
+gvel <- gVoCC(temp_trend , spa_grad)
+
+gvel # dos resultados, la magnitud y el ángulo. Solo utilizaremos la magnitud. 
+
+gvel_mag <- gvel[[1]] # raster con la magnitud de la gradient-based velocity, voccMag
+
+plot(gvel_mag, main="Climate velocity (km/yr at 0.5º)") # km/yr
+hist(gvel_mag, main="Climate velocity")
+
+# Para guardar y poder abrir en programas como QGIS. Aquí se crearán varios ficheros espaciales en la carpeta de tu directory working
+# para saber o recordar dónde se guardarán utiliza lo siguiente:
+getwd() # ve al resultado para obt
+
+writeRaster(gvel, "gvel", overwrite=TRUE)
+writeRaster(temp_trend, "temp_trend", overwrite=TRUE)
+writeRaster(spa_grad, "spa_grad", overwrite=TRUE)
+
+getwd() # ve a esta dirección para obtener los ficheros que has generado
+
+```
+
+```{r R tip for #, include=FALSE}
+# you can use ctl+shift+c to add or remove commenting for multiple lines of code.
+# you can use the same keyboard shortcut to remove the documentation indicator #
+
+```
