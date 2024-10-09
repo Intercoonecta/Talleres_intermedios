@@ -109,20 +109,18 @@ library(satin)
 Importar datos de Copernicus
 
 ```{r}
-cop <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728438763697.nc")
+thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728442616519.nc")
 ```
 
-inspeccionar objeto cop
+inspeccionar objeto thetao
 
 ```{r}
-class(cop)
-names(cop)
+class(thetao)
 ```
 
-usaremos solo la temperatura potencial, thetao
+usaremos la temperatura potencial, thetao
 
 ```{r}
-thetao <- cop$thetao
 thetao
 ```
 

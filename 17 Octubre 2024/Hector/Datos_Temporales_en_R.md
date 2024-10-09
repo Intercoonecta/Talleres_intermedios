@@ -85,7 +85,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-08 19:20:13 MST"
+    [1] "2024-10-09 08:42:28 MST"
 
 ``` r
 as.Date(ahora)
@@ -228,27 +228,22 @@ library(satin)
 Importar datos de Copernicus
 
 ``` r
-cop <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728438763697.nc")
+thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728442616519.nc")
 ```
 
-inspeccionar objeto cop
+inspeccionar objeto thetao
 
 ``` r
-class(cop)
+class(thetao)
 ```
 
-    [1] "list"
+    [1] "satin"
+    attr(,"package")
+    [1] "satin"
+
+usaremos la temperatura potencial, thetao
 
 ``` r
-names(cop)
-```
-
-    [1] "so"     "thetao"
-
-usaremos solo la temperatura potencial, thetao
-
-``` r
-thetao <- cop$thetao
 thetao
 ```
 
@@ -262,12 +257,12 @@ thetao
      Spatial resolution: 9.2 km 
 
     Data dimensions:
-     121 120 731 5 
+     61 60 731 5 
 
     Data ranges:
               lon lat   thetao     period    depth
-    min -117.0000  22 11.43721 2019-01-01 0.494025
-    max -107.0833  32 33.36512 2020-12-31 5.078224
+    min -112.0000  22 13.39357 2019-01-01 0.494025
+    max -107.0833  27 32.84582 2020-12-31 5.078224
 
 En este tenemos 731 días , del 2019-01-01 al 2020-12-31
 
