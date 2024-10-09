@@ -41,31 +41,37 @@ Presiona el botón "Sign in". La siguiente pantaya sólo aparecerá la primera v
 
 Ahora sólo falta seleccionar el lenguaje de programación y la aplicación que deseas usar en la sesión actual: "Python en JupyterLab" o "R en RStudio"
 
-![hub select Python or R](imagenes/ohw23-jupyterhub-select-Python-or-R.png)
+![hub select Python or R](imagenes/ohwe24-jupyterhub-select-Python-or-R.png)
 
 Una vez hecha la selección, verás una notificación como esta mientras el entorno de JupyterHub está cargando:
 
-![hub-loading](imagenes/ohw21-jupyterhub-loading.png)
+![hub-loading](imagenes/ohwe24-jupyterhub-loading.png)
 
 Tomará un poco de tiempo en cargar y estar listo, especialmente la primera vez. ¡Ten paciencia! Una vez que esté listo, **si seleccionaste "Python"** verás tu propia instancia de **JupyterLab**:
 
-![JupyterLab](imagenes/ohw23-jupyterhub-Python-jupyterlab.png)
+![JupyterLab - inglés](imagenes/ohwe24-jupyterhub-Python-jupyterlab-eng.png)
 
-**Si seleccionaste R,** verás tu propia instancia de **RStudio**:
+Y al cambiar el idioma del interfaz a español:
 
-![RStudio](imagenes/ohw23-jupyterhub-R-RStudio.png)
+![JupyterLab - español](imagenes/ohwe24-jupyterhub-Python-jupyterlab-es.png)
+
+**Si seleccionaste R,** verás tu propia instancia de **RStudio** (en inglés):
+
+![RStudio](imagenes/ohwe24-jupyterhub-R-RStudio.png)
 
 
 ## ¿Cómo cargo el repositorio de los tutoriales al Hub?
 
-Para los tutoriales, recomendamos el uso de [nbgitpuller](https://jupyterhub.github.io/nbgitpuller/) para clonar y extraer el repositorio de los tutoriales, o actualizar la copia que ya tiene. Utilice el enlace mágico `nbgitpuller` a continuación para lograr este clon o actualización.
+Para los tutoriales, recomendamos el uso de [nbgitpuller](https://jupyterhub.github.io/nbgitpuller/) para clonar y extraer el repositorio de los tutoriales, o actualizar la copia que ya tienes. Utiliza el enlace mágico `nbgitpuller` a continuación para lograr este clon o actualización.
 
 ### Haz git *pull* del repositorio de los tutoriales usando la magia de `nbgitpuller`
 
-El enlace `nbgitpuller` es mágico, pero no puede detectar qué entorno (Python o R) estás ejecutando actualmente. Ambos enlaces, de Python y R, actualizan el mismo repositorio de tutoriales, pero pueden dar un error si utilizas el enlace de Python si estás en el entorno de R, o viceversa.
+El enlace `nbgitpuller` es mágico, pero no puede detectar qué entorno (Python o R) estás ejecutando actualmente. Ambos enlaces, de Python y R, actualizan el mismo repositorio de tutoriales, pero pueden dar un error si utilizas el enlace de Python mientras estás en el entorno de R, o viceversa.
 
-- **Python.** Presiona este enlace para [hacer un "pull" del repositorio de los tutoriales para el entorno de Python](https://oceanhackweek.2i2c.cloud/hub/user-redirect/git-pull?repo=https%3A%2F%2Fgithub.com%2FIntercoonecta%2Ftutoriales&urlpath=lab%2Ftree%2Ftutoriales)
-- **R.** Presiona este enlace para [hacer un "pull" del repositorio de los tutoriales para el entorno de R](https://oceanhackweek.2i2c.cloud/hub/user-redirect/git-pull?repo=https%3A%2F%2Fgithub.com%2FIntercoonecta%2Ftutoriales&urlpath=rstudio)
+Para subir o actualizar los tutoriales del repositorio `Talleres_intermedios` a tu cuenta en el Hub:
+
+- **Python.** Presiona este enlace para [hacer un "pull" del repositorio de los tutoriales para el entorno de Python](https://oceanhackweek.2i2c.cloud/hub/user-redirect/git-pull?repo=https%3A%2F%2Fgithub.com%2FIntercoonecta%2FTalleres_intermedios&urlpath=lab%2Ftree%2FTalleres_intermedios)
+- **R.** Presiona este enlace para [hacer un "pull" del repositorio de los tutoriales para el entorno de R](https://oceanhackweek.2i2c.cloud/hub/user-redirect/git-pull?repo=https%3A%2F%2Fgithub.com%2FIntercoonecta%2FTalleres_intermedios&urlpath=rstudio)
 
 ### Alternativa con comandos de `git` (¡con cuidado!)
 
@@ -84,13 +90,13 @@ Puedes obtener el mismo resultado que `nbgitpuller` utilizando `git` directament
 
 Accede al menú `Archivo > Panel de Control`:
 
-![hub shut down step 1](imagenes/ohw21-shutdownhub-step1.png)
+![hub shut down step 1](imagenes/ohwe24-shutdownhub-step1.png)
 
 luego presiona el botón `Stop My Server` y el enlace `logout` arriba a la derecha.
 
-![hub shut down step 2](imagenes/ohw21-shutdownhub-step2.png)
+![hub shut down step 2](imagenes/ohwe24-shutdownhub-step2.png)
 
-El menú `Archivo > Log Out` en realidad no cierra la sesión del Hub, así que por favor sigue estos pasos.
+El menú `Archivo > Cerrar sesión` en realidad no cierra la sesión del Hub, así que por favor sigue estos pasos.
 
 ### Si estás usando RStudio (R)
 
