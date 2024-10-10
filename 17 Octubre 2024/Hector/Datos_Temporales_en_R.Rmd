@@ -1,5 +1,5 @@
 ---
-title: "Datos temporales en R."
+title: "Datos temporales en R"
 author: "Héctor Villalobos"
 format: 
   gfm:
@@ -7,7 +7,7 @@ format:
 editor: visual
 ---
 
-# Introducción
+## Introducción
 
 Para trabajar con datos temporales en R es importante conocer las diferentes clases disponibles para almacenar y representar esta información. Para ello, primeramente debemos saber como están estructurados los datos fuente.
 
@@ -109,7 +109,7 @@ library(satin)
 Importar datos de Copernicus
 
 ```{r}
-thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728442616519.nc")
+thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
 ```
 
 inspeccionar objeto thetao
