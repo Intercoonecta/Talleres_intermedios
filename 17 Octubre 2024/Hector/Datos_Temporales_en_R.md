@@ -1,8 +1,8 @@
-Datos temporales en R.
+Datos temporales en R
 ================
 Héctor Villalobos
 
-# Introducción
+## Introducción
 
 Para trabajar con datos temporales en R es importante conocer las
 diferentes clases disponibles para almacenar y representar esta
@@ -85,13 +85,13 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-08 19:20:13 MST"
+    [1] "2024-10-10 12:04:37 MST"
 
 ``` r
 as.Date(ahora)
 ```
 
-    [1] "2024-10-09"
+    [1] "2024-10-10"
 
 Esto nos lleva a las siguientes clases que permiten guardar la hora y la
 zona de tiempo: **POSIXlt** y **POSIXct**. La primera es una lista de
@@ -228,27 +228,22 @@ library(satin)
 Importar datos de Copernicus
 
 ``` r
-cop <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728438763697.nc")
+thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
 ```
 
-inspeccionar objeto cop
+inspeccionar objeto thetao
 
 ``` r
-class(cop)
+class(thetao)
 ```
 
-    [1] "list"
+    [1] "satin"
+    attr(,"package")
+    [1] "satin"
+
+usaremos la temperatura potencial, thetao
 
 ``` r
-names(cop)
-```
-
-    [1] "so"     "thetao"
-
-usaremos solo la temperatura potencial, thetao
-
-``` r
-thetao <- cop$thetao
 thetao
 ```
 
@@ -262,12 +257,12 @@ thetao
      Spatial resolution: 9.2 km 
 
     Data dimensions:
-     121 120 731 5 
+     61 60 731 2 
 
     Data ranges:
               lon lat   thetao     period    depth
-    min -117.0000  22 11.43721 2019-01-01 0.494025
-    max -107.0833  32 33.36512 2020-12-31 5.078224
+    min -112.0000  22 13.78762 2019-01-01 0.494025
+    max -107.0833  27 32.84582 2020-12-31 1.541375
 
 En este tenemos 731 días , del 2019-01-01 al 2020-12-31
 
@@ -298,7 +293,7 @@ sst <- extractPts(thetao, points = pt)
 dim(sst)
 ```
 
-    [1]    1 3661
+    [1]    1 1468
 
 En sst están los valores de temperatura potencial para el punto
 seleccionado, en los 731 díasy para los 5 niveles de profundidad 731
