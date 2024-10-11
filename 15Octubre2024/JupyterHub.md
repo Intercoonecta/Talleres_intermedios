@@ -25,11 +25,11 @@ Te recomendamos que utilices nuestros recursos compartidos de JupyterHub para ej
 
 ## Acceso a "El Hub", nuestro entorno compartido en la nube
 
-El acceso a nuestro entorno computacional de JupyterHub en la nube (**"El Hub"**) es fácil. Navega a [https://oceanhackweek.2i2c.cloud](https://oceanhackweek.2i2c.cloud) en tu navegador:
+El acceso a nuestro entorno computacional de JupyterHub en la nube (**"El Hub"**) es fácil. Accede a [https://oceanhackweek.2i2c.cloud](https://oceanhackweek.2i2c.cloud) en tu navegador:
 
-![hub-opening](imagenes/ohw21-jupyterhub-opening.png)
+![hub-opening](imagenes/ohwe24-jupyterhub-opening.png)
 
-Ahora presiona el botón "Log in to continue", y la siguiente pantalla te pedirá tu nombre de usuario y contraseña de tu cuenta de GitHub para entrar con tus credenciales de GitHub (nombre de usuario y contraseña):
+Ahora presiona el botón "Log in para continuar", y la siguiente pantalla te pedirá tu nombre de usuario y contraseña de tu cuenta de GitHub para entrar con tus credenciales de GitHub (nombre de usuario y contraseña):
 
 ![sign-in with github](imagenes/2i2chub-signin-with-github.png)
 
