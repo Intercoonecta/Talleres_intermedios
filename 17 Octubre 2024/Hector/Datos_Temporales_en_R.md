@@ -4,29 +4,38 @@ Héctor Villalobos
 
 ## Introducción
 
-Para trabajar con datos temporales en R es importante conocer las
-diferentes clases disponibles para almacenar y representar esta
-información. Para ello, primeramente debemos saber como están
-estructurados los datos fuente.
+Hablamos de datos temporales cuando las variables que se recolectan
+tienen asociada una fecha y posiblemente una hora. El uso correcto de
+estos datos depende de definir con toda claridad el formato en que esta
+información se almacena. Por ejemplo, en los archivos (ascii o Excel) se
+puede guardar el año, mes y día en columnas separadas, o combinados en
+una misma columna como una cadena de texto o bien en un formato
+especializado de fecha (en el caso de Excel).
 
-Es muy común que en los archivos (ascii o excel) en los que tenemos o
-nos facilitan información se intercambie de posición el mes y el día en
-diferentes renglones ¡de la misma columna!, por lo que es sumamente
-importante verificar esto antes de importarlos en R, de lo contrario se
-obtendrán resultados inconsistentes. Por ello es importante adoptar un
-estilo consistente. Los mas apropiados son “dd-mm-yyyy” y “yyyy-mm-dd”
-donde cada letra representa un dígito para el día (“D”), mes (“M”) y año
-(“Y”).
+Usualmente se usan solo números, por lo que tendríamos algo así como
+“30-09-2024” (dd-mm-aaaa), aunque en algunos casos podría escribirse
+como “2024/Sep/30” (aaaa/mmm/dd). El tiempo podría estar en una columna
+aparte o también combinado con la fecha: “2024-09-30 15:30:58”
+(aaaa-mm-dd hh:mm:ss).
 
-<img src="fechas.jpg" width="266" />
+Lo importante en todos los casos es la consistencia, y sobretodo no
+invertir el orden del mes y el día ni escribir indistintamente “Sep”,
+“sep” o “Septiembre” . Es sumamente importante revisar esto antes de
+importar los datos en R.
 
-Cuando nuestros datos incluyen horas, quedarían como “dd-mm-yyyy
-HH:MM:SS” y “yyyy-mm-dd HH:MM:SS”. Cuando datos de este tipo se importan
-desde un archivo ascii con la función `read.table()`, en R serán de
-clase “character”, lo cual dificultará su uso en gráficos o para
-realizar operaciones, por lo que debemos convertirlos a una clase
-especial para fechas o fecha-tiempo. Tal vez la clase más sencilla,
-cuando solo tenemos la fecha es “Date”.
+<img src="fechas.jpg" data-fig-align="center" width="266" />
+
+Al importar en R desde archivos ascii con la función `read.table()`, la
+clase de la variable con la fecha será `character`, lo cual dificultará
+su uso en gráficos o para realizar operaciones, por lo que debemos
+convertirlos a una clase especial para fechas o fecha-tiempo. Cuando se
+importan archivos de Excel con la función `read_excel()` del paquete
+**readxl** usualmente ya pasa a una clase A continuación se describen
+algunas de estas clases.
+
+## Clase `Date`
+
+Tal vez la clase más sencilla, cuando solo tenemos la fecha es “Date”.
 
 ``` r
 fechas <- paste("2024", c("09", "10", "11", "12"), c("13", "18", "25", "31"), sep ="-")
@@ -85,13 +94,13 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-10 12:04:37 MST"
+    [1] "2024-10-14 14:21:14 MST"
 
 ``` r
 as.Date(ahora)
 ```
 
-    [1] "2024-10-10"
+    [1] "2024-10-14"
 
 Esto nos lleva a las siguientes clases que permiten guardar la hora y la
 zona de tiempo: **POSIXlt** y **POSIXct**. La primera es una lista de
