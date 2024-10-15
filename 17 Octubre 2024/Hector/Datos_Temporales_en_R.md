@@ -34,7 +34,7 @@ paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el
 formato no es ambiguo. A continuación se describen algunas de estas
 clases especializadas.
 
-## Clase `Date`
+## Clase `"Date"`
 
 Esta es tal vez la clase más sencilla cuando solo tenemos fechas.
 
@@ -98,7 +98,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-14 19:21:24 MST"
+    [1] "2024-10-14 19:55:59 MST"
 
 Al aplicar la función `as.Date()` la hora se descarta.
 
@@ -108,14 +108,17 @@ as.Date(ahora)
 
     [1] "2024-10-15"
 
-Esto nos lleva a las siguientes clases que permiten guardar la hora y la
-zona de tiempo: **POSIXlt** y **POSIXct**. La primera es una lista de
-vectores `sec`, `min`, `hour` para el tiempo y `mday`, `mon` y `year`
-para la fecha. `wday` y `yday` para el día de la semana y el día del
-año. `isdst`, es una bandera para el horario de verano, y algunas veces
-`zone`, una cadena de texto para la zona de tiempo y `gmtoff`, que sería
-el *offset* en segundos del horario GMT. La función `strptime()` nos
-permite convertir una cadena de texto a la clase POSIXlt.
+## La clase `"POSIXlt"`
+
+Las clases más utilizadas en R que permiten guardar la fecha, hora y la
+zona de tiempo son **“POSIXlt”** y **“POSIXct”**. La primera almacena
+esta información como una lista de vectores `sec`, `min`, `hour` para el
+tiempo; `mday`, `mon` y `year` para la fecha; `wday` y `yday` para el
+día de la semana y el día del año, respectivamente;`isdst`, es una
+bandera para el horario de verano; `zone` es una cadena de texto para la
+zona de tiempo; y `gmtoff` sería el *offset* en segundos del horario
+GMT. La función `strptime()` nos permite convertir una cadena de texto a
+la clase `"POSIXlt"`.
 
 ``` r
 dt <- strptime("2024-10-08 14:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
@@ -130,8 +133,8 @@ class(dt)
 
     [1] "POSIXlt" "POSIXt" 
 
-Pare ver los vectores anteriores, usamos la función `unclass()` como
-antes.
+Pare ver los vectores mencionados antes, usamos nuevamente la función
+`unclass()`.
 
 ``` r
 unclass(dt)
@@ -176,56 +179,68 @@ unclass(dt)
     [1] TRUE
 
 También podemos usar la función `as.POSIXlt()` con el mismo propósito, y
-si no indicamos la zona se ajustará a la de nuestra configuración
+si no lo indicamos la zona de tiempo se ajustará de acuerdo a nuestra
+configuración.
 
 ``` r
-X1 <- as.POSIXlt("2024-10-08 14:12:30")
-X1
+psx.lt <- as.POSIXlt("2024-10-08 14:12:30")
+psx.lt
 ```
 
     [1] "2024-10-08 14:12:30 MST"
 
 ``` r
-class(X1)
+class(psx.lt)
 ```
 
     [1] "POSIXlt" "POSIXt" 
 
-La siguiente clase, POSIXct, representa el número de segundos desde el
-inicio de 1970 (en UTC) como un vector numérico.
+## La clase `"POSIXct"`
+
+Esta clase representa el número de segundos desde el primero de enero de
+1970 (en UTC) como un vector numérico.
 
 ``` r
-X2 <- as.POSIXct("2024-10-08 14:12:30")
-X2
+psx.ct <- as.POSIXct("2024-10-08 14:12:30", tz = "UTC")
+psx.ct
 ```
 
-    [1] "2024-10-08 14:12:30 MST"
+    [1] "2024-10-08 14:12:30 UTC"
 
 ``` r
-class(X2)
+class(psx.ct)
 ```
 
     [1] "POSIXct" "POSIXt" 
 
-hdhdhgd
+Aplicando la función `unclass()` podemos ver el número de segundos
+transcurridos desde el origen mencionado antes.
 
 ``` r
-unclass(X2)
+unclass(psx.ct)
 ```
 
-    [1] 1728421950
+    [1] 1728396750
     attr(,"tzone")
-    [1] ""
+    [1] "UTC"
+
+Esto lo podemos comprobar fácilmente.
 
 ``` r
 # definir origen
 orig <- as.POSIXct("1970-01-01 00:00:00", format = "%Y-%m-%d %H:%M:%S", tz = "UTC") 
 
-# calcular la diferencia entre X2 y el origen
-difftime(X2, orig, units = "s")
+# calcular la diferencia entre psx.ct y el origen
+difftime(psx.ct, orig, units = "s")
 ```
 
-    Time difference of 1728421950 secs
+    Time difference of 1728396750 secs
+
+De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente
+para incluirse en data frames, mientras que `"POSIXlt"`es una forma más
+fácil de leer para el humano.
+
+## Manipulación de datos temporales: temperatura potencial del mar diaria
 
 Datos diarios de temperatura
 
@@ -298,7 +313,7 @@ temperatura en el nivel más superficial
 plot(thetao)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-18-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-19-1.png)
 
 Tomemos por ejemplo un pixel a los 26° de lat N y 110° de lon W
 
@@ -348,7 +363,7 @@ Figura
 plot(tsm, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2))
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-22-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-23-1.png)
 
 Si quisieramos los promedios mensuales
 
@@ -405,7 +420,7 @@ plot(tsm$fecha, tsm$temperatura, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
 lines(tsm$fecha, tsm$sm, lwd = 2)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-24-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-25-1.png)
 
 Agregar por año mes
 
@@ -427,6 +442,6 @@ plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,
      xlab = "mes", ylab = "temperatura (°C)", type = "b")
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-26-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-27-1.png)
 
   
