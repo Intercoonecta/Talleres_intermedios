@@ -12,7 +12,7 @@ El ecosistema Jupyter utiliza tecnología web que permite correr las aplicacione
 
 ### Más información sobre Jupyter
 
-Para mayor información, consulta [nuestro tutorial sobre Jupyter del programa "Aula Invertida"](https://github.com/Intercoonecta/Aula-invertida/blob/main/Intro-a-Jupyter/Jupyter.md). Este tutorial incluye una reseña del uso de cuadernos Jupyter, **instrucciones para cambiar el interfaz de JupyterLab al español**, e instrucciones para instalar JupyterLab en tu computadora.
+Para mayor información, consulta [nuestro tutorial sobre Jupyter del programa "Aula Invertida"](https://github.com/Intercoonecta/Aula-invertida/blob/main/Intro-a-Jupyter/Jupyter.md). Este tutorial incluye una reseña del uso de cuadernos Jupyter, [**instrucciones para cambiar el interfaz de JupyterLab al español**](https://github.com/Intercoonecta/Aula-invertida/blob/main/Intro-a-Jupyter/jupyter-tutorial.md#cambiar-el-interfaz-al-espa%C3%B1ol), e instrucciones para instalar JupyterLab en tu computadora.
 
 ## Entorno computacional compartido, en la nube
 
