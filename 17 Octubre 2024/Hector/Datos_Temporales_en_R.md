@@ -20,22 +20,23 @@ aparte o también combinado con la fecha: “2024-09-30 15:30:58”
 
 Lo importante en todos los casos es la consistencia, y sobretodo no
 invertir el orden del mes y el día ni escribir indistintamente “Sep”,
-“sep” o “Septiembre” . Es sumamente importante revisar esto antes de
+“sep” y “Septiembre” . Es sumamente importante revisar esto antes de
 importar los datos en R.
 
 <img src="fechas.jpg" data-fig-align="center" width="266" />
 
 Al importar en R desde archivos ascii con la función `read.table()`, la
-clase de la variable con la fecha será `character`, lo cual dificultará
-su uso en gráficos o para realizar operaciones, por lo que debemos
-convertirlos a una clase especial para fechas o fecha-tiempo. Cuando se
-importan archivos de Excel con la función `read_excel()` del paquete
-**readxl** usualmente ya pasa a una clase A continuación se describen
-algunas de estas clases.
+clase de la variable con la fecha será `"character"`, lo cual
+dificultará su uso en gráficos o para realizar operaciones, por lo que
+debemos convertirlos a una clase apropiada para fecha o fecha-tiempo. En
+cambio, al importar archivos Excel con la función `read_excel()` del
+paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el
+formato no es ambiguo. A continuación se describen algunas de estas
+clases especializadas.
 
 ## Clase `Date`
 
-Tal vez la clase más sencilla, cuando solo tenemos la fecha es “Date”.
+Esta es tal vez la clase más sencilla cuando solo tenemos fechas.
 
 ``` r
 fechas <- paste("2024", c("09", "10", "11", "12"), c("13", "18", "25", "31"), sep ="-")
@@ -44,14 +45,15 @@ fechas
 
     [1] "2024-09-13" "2024-10-18" "2024-11-25" "2024-12-31"
 
+En el ejemplo, el vector `fechas` es de clase `"character"`.
+
 ``` r
 class(fechas)
 ```
 
     [1] "character"
 
-Como vemos, en este momento son clase “character”. La conversión a la
-clase “Date” se logra con la función `as.Date().`
+La conversión a la clase `"Date"` se logra con la función `as.Date().`
 
 ``` r
 fechas <- as.Date(fechas)
@@ -78,6 +80,9 @@ unclass(fechas)
 origen <- as.Date("1970-01-01")
 ```
 
+La resta siguiente nos debe dar los mismos valores obtenidos con
+`unclass(fechas)`.
+
 ``` r
 fechas - origen
 ```
@@ -85,22 +90,23 @@ fechas - origen
     Time differences in days
     [1] 19979 20014 20052 20088
 
-Con la función `Sys.time()` podemos obtener la fecha-hora actual en el
-“locale” de nuestra computadora, y al aplicar la función `as.Date()` la
-hora se descarta.
+Con la función `Sys.time()` podemos obtener la fecha-hora actual de
+acuerdo a la configuración local de nuestra computadora.
 
 ``` r
 ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-14 14:21:14 MST"
+    [1] "2024-10-14 19:21:24 MST"
+
+Al aplicar la función `as.Date()` la hora se descarta.
 
 ``` r
 as.Date(ahora)
 ```
 
-    [1] "2024-10-14"
+    [1] "2024-10-15"
 
 Esto nos lleva a las siguientes clases que permiten guardar la hora y la
 zona de tiempo: **POSIXlt** y **POSIXct**. La primera es una lista de
@@ -292,7 +298,7 @@ temperatura en el nivel más superficial
 plot(thetao)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-16-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-18-1.png)
 
 Tomemos por ejemplo un pixel a los 26° de lat N y 110° de lon W
 
@@ -342,7 +348,7 @@ Figura
 plot(tsm, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2))
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-20-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-22-1.png)
 
 Si quisieramos los promedios mensuales
 
@@ -399,7 +405,7 @@ plot(tsm$fecha, tsm$temperatura, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
 lines(tsm$fecha, tsm$sm, lwd = 2)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-22-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-24-1.png)
 
 Agregar por año mes
 
@@ -421,6 +427,6 @@ plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,
      xlab = "mes", ylab = "temperatura (°C)", type = "b")
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-24-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-26-1.png)
 
   

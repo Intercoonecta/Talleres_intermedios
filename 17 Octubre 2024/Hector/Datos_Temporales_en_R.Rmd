@@ -13,29 +13,33 @@ Hablamos de datos temporales cuando las variables que se recolectan tienen asoci
 
 Usualmente se usan solo números, por lo que tendríamos algo así como "30-09-2024" (dd-mm-aaaa), aunque en algunos casos podría escribirse como "2024/Sep/30" (aaaa/mmm/dd). El tiempo podría estar en una columna aparte o también combinado con la fecha: "2024-09-30 15:30:58" (aaaa-mm-dd hh:mm:ss).
 
-Lo importante en todos los casos es la consistencia, y sobretodo no invertir el orden del mes y el día ni escribir indistintamente "Sep", "sep" o "Septiembre" . Es sumamente importante revisar esto antes de importar los datos en R.
+Lo importante en todos los casos es la consistencia, y sobretodo no invertir el orden del mes y el día ni escribir indistintamente "Sep", "sep" y "Septiembre" . Es sumamente importante revisar esto antes de importar los datos en R.
 
 ![](fechas.jpg){fig-align="center" width="266"}
 
-Al importar en R desde archivos ascii con la función `read.table()`, la clase de la variable con la fecha será `character`, lo cual dificultará su uso en gráficos o para realizar operaciones, por lo que debemos convertirlos a una clase especial para fechas o fecha-tiempo. Cuando se importan archivos de Excel con la función `read_excel()` del paquete **readxl** usualmente ya pasa a una clase A continuación se describen algunas de estas clases.
+Al importar en R desde archivos ascii con la función `read.table()`, la clase de la variable con la fecha será `"character"`, lo cual dificultará su uso en gráficos o para realizar operaciones, por lo que debemos convertirlos a una clase apropiada para fecha o fecha-tiempo. En cambio, al importar archivos Excel con la función `read_excel()` del paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el formato no es ambiguo. A continuación se describen algunas de estas clases especializadas.
 
 ## Clase `Date`
 
-Tal vez la clase más sencilla, cuando solo tenemos la fecha es "Date".
+Esta es tal vez la clase más sencilla cuando solo tenemos fechas.
 
 ```{r}
 fechas <- paste("2024", c("09", "10", "11", "12"), c("13", "18", "25", "31"), sep ="-")
 fechas
+```
+
+En el ejemplo, el vector `fechas` es de clase `"character"`.
+
+```{r}
 class(fechas)
 ```
 
-Como vemos, en este momento son clase "character". La conversión a la clase "Date" se logra con la función `as.Date().`
+La conversión a la clase `"Date"` se logra con la función `as.Date().`
 
 ```{r}
 fechas <- as.Date(fechas)
 fechas
 class(fechas)
-
 ```
 
 Esta clase representa el número de días desde el 1 de enero de 1970.
@@ -45,15 +49,22 @@ unclass(fechas)
 origen <- as.Date("1970-01-01")
 ```
 
+La resta siguiente nos debe dar los mismos valores obtenidos con `unclass(fechas)`.
+
 ```{r}
 fechas - origen
 ```
 
-Con la función `Sys.time()` podemos obtener la fecha-hora actual en el "locale" de nuestra computadora, y al aplicar la función `as.Date()` la hora se descarta.
+Con la función `Sys.time()` podemos obtener la fecha-hora actual de acuerdo a la configuración local de nuestra computadora.
 
 ```{r}
 ahora <- Sys.time()
 ahora
+```
+
+Al aplicar la función `as.Date()` la hora se descarta.
+
+```{r}
 as.Date(ahora)
 ```
 
