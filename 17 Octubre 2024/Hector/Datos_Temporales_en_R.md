@@ -98,7 +98,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-14 19:55:59 MST"
+    [1] "2024-10-14 20:10:18 MST"
 
 Al aplicar la función `as.Date()` la hora se descarta.
 
@@ -121,11 +121,11 @@ GMT. La función `strptime()` nos permite convertir una cadena de texto a
 la clase `"POSIXlt"`.
 
 ``` r
-dt <- strptime("2024-10-08 14:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+dt <- strptime("2024-10-18 07:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 dt
 ```
 
-    [1] "2024-10-08 14:12:30 UTC"
+    [1] "2024-10-18 07:12:30 UTC"
 
 ``` r
 class(dt)
@@ -147,10 +147,10 @@ unclass(dt)
     [1] 12
 
     $hour
-    [1] 14
+    [1] 7
 
     $mday
-    [1] 8
+    [1] 18
 
     $mon
     [1] 9
@@ -159,10 +159,10 @@ unclass(dt)
     [1] 124
 
     $wday
-    [1] 2
+    [1] 5
 
     $yday
-    [1] 281
+    [1] 291
 
     $isdst
     [1] 0
@@ -178,16 +178,16 @@ unclass(dt)
     attr(,"balanced")
     [1] TRUE
 
-También podemos usar la función `as.POSIXlt()` con el mismo propósito, y
-si no lo indicamos la zona de tiempo se ajustará de acuerdo a nuestra
-configuración.
+También podemos usar la función `as.POSIXlt()` para convertir una cadena
+de texto a la clase `"POSIXlt"`. En este caso, si no lo indicamos la
+zona de tiempo se ajustará de acuerdo a nuestra configuración local.
 
 ``` r
-psx.lt <- as.POSIXlt("2024-10-08 14:12:30")
+psx.lt <- as.POSIXlt("2024-10-17 07:12:30")
 psx.lt
 ```
 
-    [1] "2024-10-08 14:12:30 MST"
+    [1] "2024-10-17 07:12:30 MST"
 
 ``` r
 class(psx.lt)
@@ -201,11 +201,11 @@ Esta clase representa el número de segundos desde el primero de enero de
 1970 (en UTC) como un vector numérico.
 
 ``` r
-psx.ct <- as.POSIXct("2024-10-08 14:12:30", tz = "UTC")
+psx.ct <- as.POSIXct("2024-10-17 07:12:30", tz = "UTC")
 psx.ct
 ```
 
-    [1] "2024-10-08 14:12:30 UTC"
+    [1] "2024-10-17 07:12:30 UTC"
 
 ``` r
 class(psx.ct)
@@ -220,7 +220,7 @@ transcurridos desde el origen mencionado antes.
 unclass(psx.ct)
 ```
 
-    [1] 1728396750
+    [1] 1729149150
     attr(,"tzone")
     [1] "UTC"
 
@@ -234,13 +234,20 @@ orig <- as.POSIXct("1970-01-01 00:00:00", format = "%Y-%m-%d %H:%M:%S", tz = "UT
 difftime(psx.ct, orig, units = "s")
 ```
 
-    Time difference of 1728396750 secs
+    Time difference of 1729149150 secs
 
 De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente
-para incluirse en data frames, mientras que `"POSIXlt"`es una forma más
-fácil de leer para el humano.
+para incluirse en *data frames*, mientras que `"POSIXlt"`es una forma
+más fácil de leer para el humano.
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
+
+Para ilustrar la manipulación de datos temporales utilizaremos
+información de la temperatura potencial diaria del producto *Global
+Ocean Physics Reanalysis*\[^1\] de Copernicus
+(<https://marine.copernicus.eu/>)
+
+\[^1\]: https://doi.org/10.48670/moi-00021
 
 Datos diarios de temperatura
 
@@ -426,16 +433,34 @@ Agregar por año mes
 
 ``` r
 tsm.mens <- aggregate(tsm$temperatura, by = list(mes = tsm$mes, año = tsm$año), mean)
-head(tsm.mens)
+tsm.mens
 ```
 
-      mes  año        x
-    1   1 2019 21.36710
-    2   2 2019 19.60258
-    3   3 2019 20.55122
-    4   4 2019 21.91614
-    5   5 2019 24.13084
-    6   6 2019 26.40666
+       mes  año        x
+    1    1 2019 21.36710
+    2    2 2019 19.60258
+    3    3 2019 20.55122
+    4    4 2019 21.91614
+    5    5 2019 24.13084
+    6    6 2019 26.40666
+    7    7 2019 29.07128
+    8    8 2019 30.37952
+    9    9 2019 30.43024
+    10  10 2019 28.98196
+    11  11 2019 26.10929
+    12  12 2019 23.13966
+    13   1 2020 21.42255
+    14   2 2020 19.56633
+    15   3 2020 19.65863
+    16   4 2020 21.70246
+    17   5 2020 25.21871
+    18   6 2020 27.20578
+    19   7 2020 29.32309
+    20   8 2020 29.98454
+    21   9 2020 30.84051
+    22  10 2020 30.47426
+    23  11 2020 25.42008
+    24  12 2020 22.43016
 
 ``` r
 plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,

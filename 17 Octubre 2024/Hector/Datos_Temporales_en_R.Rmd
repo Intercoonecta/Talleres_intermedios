@@ -73,7 +73,7 @@ as.Date(ahora)
 Las clases más utilizadas en R que permiten guardar la fecha, hora y la zona de tiempo son **"POSIXlt"** y **"POSIXct"**. La primera almacena esta información como una lista de vectores `sec`, `min`, `hour` para el tiempo; `mday`, `mon` y `year` para la fecha; `wday` y `yday` para el día de la semana y el día del año, respectivamente;`isdst`, es una bandera para el horario de verano; `zone` es una cadena de texto para la zona de tiempo; y `gmtoff` sería el *offset* en segundos del horario GMT. La función `strptime()` nos permite convertir una cadena de texto a la clase `"POSIXlt"`.
 
 ```{r}
-dt <- strptime("2024-10-08 14:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+dt <- strptime("2024-10-18 07:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 dt
 class(dt)
 ```
@@ -84,10 +84,10 @@ Pare ver los vectores mencionados antes, usamos nuevamente la función `unclass(
 unclass(dt)
 ```
 
-También podemos usar la función `as.POSIXlt()` con el mismo propósito, y si no lo indicamos la zona de tiempo se ajustará de acuerdo a nuestra configuración.
+También podemos usar la función `as.POSIXlt()` para convertir una cadena de texto a la clase `"POSIXlt"`. En este caso, si no lo indicamos la zona de tiempo se ajustará de acuerdo a nuestra configuración local.
 
 ```{r}
-psx.lt <- as.POSIXlt("2024-10-08 14:12:30")
+psx.lt <- as.POSIXlt("2024-10-17 07:12:30")
 psx.lt
 class(psx.lt)
 ```
@@ -97,7 +97,7 @@ class(psx.lt)
 Esta clase representa el número de segundos desde el primero de enero de 1970 (en UTC) como un vector numérico.
 
 ```{r}
-psx.ct <- as.POSIXct("2024-10-08 14:12:30", tz = "UTC")
+psx.ct <- as.POSIXct("2024-10-17 07:12:30", tz = "UTC")
 psx.ct
 class(psx.ct)
 ```
@@ -118,9 +118,13 @@ orig <- as.POSIXct("1970-01-01 00:00:00", format = "%Y-%m-%d %H:%M:%S", tz = "UT
 difftime(psx.ct, orig, units = "s")
 ```
 
-De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente para incluirse en data frames, mientras que `"POSIXlt"`es una forma más fácil de leer para el humano.
+De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente para incluirse en *data frames*, mientras que `"POSIXlt"`es una forma más fácil de leer para el humano.
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
+
+Para ilustrar la manipulación de datos temporales utilizaremos información de la temperatura potencial diaria del producto *Global Ocean Physics Reanalysis*\[\^1\] de Copernicus (<https://marine.copernicus.eu/>)
+
+\[\^1\]: https://doi.org/10.48670/moi-00021
 
 Datos diarios de temperatura
 
@@ -218,7 +222,7 @@ Agregar por año mes
 
 ```{r}
 tsm.mens <- aggregate(tsm$temperatura, by = list(mes = tsm$mes, año = tsm$año), mean)
-head(tsm.mens)
+tsm.mens
 ```
 
 ```{r}
