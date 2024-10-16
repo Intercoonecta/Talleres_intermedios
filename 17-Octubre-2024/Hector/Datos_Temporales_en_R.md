@@ -7,31 +7,35 @@ Héctor Villalobos
 Hablamos de datos temporales cuando las variables que se recolectan
 tienen asociada una fecha y posiblemente una hora. El uso correcto de
 estos datos depende de definir con toda claridad el formato en que esta
-información se almacena. Por ejemplo, en los archivos (ascii o Excel) se
-puede guardar el año, mes y día en columnas separadas, o combinados en
-una misma columna como una cadena de texto o bien en un formato
-especializado de fecha (en el caso de Excel).
+información se almacena. Por ejemplo, en nuestros archivos (ascii o
+Excel) se puede guardar el año, mes y día en columnas separadas, o
+combinados en una misma columna como una cadena de texto o bien en un
+formato especializado de fecha (en el caso de Excel).
 
-Usualmente se usan solo números, por lo que tendríamos algo así como
-“30-09-2024” (dd-mm-aaaa), aunque en algunos casos podría escribirse
-como “2024/Sep/30” (aaaa/mmm/dd). El tiempo podría estar en una columna
+Usualmente se utilizan solo números, dos dígitos para el mes y el día y
+cuatro para el año, por lo que tendríamos algo así como “30-09-2024”
+(dd-mm-aaaa), aunque no necesariamente en ese orden. En otros casos
+podría escribirse el nombre del mes completo o abreviado, por ejemplo
+“2024/Sep/30” (aaaa/mmm/dd). El tiempo podría estar en una columna
 aparte o también combinado con la fecha: “2024-09-30 15:30:58”
 (aaaa-mm-dd hh:mm:ss).
 
-Lo importante en todos los casos es la consistencia, y sobretodo no
-invertir el orden del mes y el día ni escribir indistintamente “Sep”,
-“sep” y “Septiembre” . Es sumamente importante revisar esto antes de
-importar los datos en R.
+Lo importante en todos los casos es la consistencia, no mezclar los
+nombres de los meses con números, ni escribir indistintamente “Sep”,
+“sep” y “Septiembre”, pero sobre todo, no invertir el orden del mes y el
+día. Es indisoensable revisar estos detalles en nuestros datos antes de
+importarlos en R.
 
 <img src="fechas.jpg" data-fig-align="center" width="266" />
 
 Al importar en R desde archivos ascii con la función `read.table()`, la
-clase de la variable con la fecha será `"character"`, lo cual
-dificultará su uso en gráficos o para realizar operaciones, por lo que
-debemos convertirlos a una clase apropiada. En cambio, al importar
-archivos Excel con la función `read_excel()` del paquete **readxl**
-usualmente ya pasan como clase `"POSIXct"`, si el formato no es ambiguo.
-A continuación se describen algunas de estas clases especializadas.
+variable con la fecha será reconocida como texto (clase `"character"`),
+lo cual dificultará su uso en gráficos o para realizar operaciones, por
+lo que debemos convertirlos a una clase apropiada. En cambio, al
+importar archivos Excel con la función `read_excel()` del paquete
+**readxl** usualmente ya pasan como clase `"POSIXct"`, si el formato no
+es ambiguo. A continuación se describen algunas de estas clases
+especializadas.
 
 ## Clase `"Date"`
 
@@ -44,7 +48,8 @@ fechas
 
     [1] "2024-09-13" "2024-10-18" "2024-11-25" "2024-12-31"
 
-En el ejemplo, el vector `fechas` es de clase `"character"`.
+En el ejemplo, el vector `fechas`, aunque parece contener fechas, es de
+clase `"character"`.
 
 ``` r
 class(fechas)
@@ -54,9 +59,10 @@ class(fechas)
 
 La conversión a la clase `"Date"` se logra con la función `as.Date()`.
 Esta función trata de determinar que parte de la cadena de texto
-representa al día, al mes y al año, aunque de igual manera podemos
+representa al día, al mes y al año, al igual que el carácter que separa
+a cada elemento (en este caso “-”), aunque de igual manera podemos
 especificarlo nosotros mediante el argumento `format = "%Y-%m-%d"` que
-veremos más adelante.
+explicaremos más adelante.
 
 ``` r
 fechas <- as.Date(fechas)
@@ -71,7 +77,8 @@ class(fechas)
 
     [1] "Date"
 
-Esta clase representa el número de días desde el 1 de enero de 1970.
+Esta clase se almacena como el número de días desde el 1 de enero de
+1970.
 
 ``` r
 unclass(fechas)
@@ -79,14 +86,11 @@ unclass(fechas)
 
     [1] 19979 20014 20052 20088
 
+Podemos verificar lo anterior definiendo el origen en la misma clase y
+restandolo a nuestro vector de fechas.
+
 ``` r
 origen <- as.Date("1970-01-01")
-```
-
-La resta siguiente nos debe dar los mismos valores obtenidos con
-`unclass(fechas)`.
-
-``` r
 fechas - origen
 ```
 
@@ -101,12 +105,17 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-15 19:54:31 MST"
+    [1] "2024-10-16 09:44:10 MST"
 
-Al aplicar la función `as.Date()` la hora se descarta.
+La función `as.Date()` descarta la hora. Aquí se especifica la zona de
+tiempo de la configuración local de la computadora donde se creó este
+tutorial para evitar que se considere con horario UTC (tiempo universal
+coordinado, sucesor del tiempo medio de Greenwich o GMT) . Se pueden
+consultar los códigos de las zonas de tiempo con la función
+`OlsonNames()`.
 
 ``` r
-as.Date(ahora)
+as.Date(ahora, tz = "America/Mazatlan")
 ```
 
     [1] "2024-10-16"
@@ -124,11 +133,11 @@ GMT. La función `strptime()` nos permite convertir una cadena de texto a
 la clase `"POSIXlt"`.
 
 ``` r
-dt <- strptime("2024-10-18 07:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+dt <- strptime("2024-10-17 07:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 dt
 ```
 
-    [1] "2024-10-18 07:12:30 UTC"
+    [1] "2024-10-17 07:12:30 UTC"
 
 ``` r
 class(dt)
@@ -140,9 +149,10 @@ Aquí vemos de nueva cuenta el uso del argumento `format` indicando que
 el año está primero e incluye la centuria (`%Y`), seguido del mes como
 número de dos dígitos (`%m`) y el día (`%d`) separados por un guión.
 Después siguen los códigos para la hora (`%H`), minutos (`%M`) y
-segundos (`%S`). Si nuestra cadena de texto hubiera sido “24-Oct.-18” el
-formato cambiaría a `"%y-%b-%d"`. Estos códigos y otros más se puden
-consultar en la ayuda de la función `strptime()`.
+segundos (`%S`) separados por “:”. Si nuestra cadena de texto hubiera
+sido “24-Oct.-17” el argumento cambiaría a `format = "%y-%b-%d"`. Estos
+códigos y otros más se pueden consultar en la ayuda de la función
+`strptime()`.
 
 Para ver los vectores mencionados antes, usamos nuevamente la función
 `unclass()`.
@@ -161,7 +171,7 @@ unclass(dt)
     [1] 7
 
     $mday
-    [1] 18
+    [1] 17
 
     $mon
     [1] 9
@@ -170,10 +180,10 @@ unclass(dt)
     [1] 124
 
     $wday
-    [1] 5
+    [1] 4
 
     $yday
-    [1] 291
+    [1] 290
 
     $isdst
     [1] 0
@@ -188,6 +198,9 @@ unclass(dt)
     [1] "UTC"
     attr(,"balanced")
     [1] TRUE
+
+Notar que el mes es 9 porque se cuenta desde 0. En el caso del año, el
+origen es 1900, por lo que 124 + 1900 = 2024.
 
 También podemos usar la función `as.POSIXlt()` para convertir una cadena
 de texto a la clase `"POSIXlt"`. En este caso, si no lo indicamos la
@@ -253,8 +266,9 @@ más fácil de leer para el humano.
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
 
-Para ilustrar la manipulación de datos temporales utilizaremos
-información del producto *Global Ocean Physics Reanalysis*
+Una vez explicadas las clases especializadas para fechas-tiempo en R,
+vamos a ilustrar la manipulación de este tipo de información utilizando
+el producto *Global Ocean Physics Reanalysis*
 (<https://doi.org/10.48670/moi-00021>) de Copernicus
 (<https://marine.copernicus.eu/>).
 
@@ -274,7 +288,7 @@ head(time)
     [1] 1546300800 1546387200 1546473600 1546560000 1546646400 1546732800
 
 Inspeccionando un poco el archivo (tecleando `ncf` en la consola de R)
-podemos notar que estos números corresponden al número de segundos desde
+podemos notar que estos valores corresponden al número de segundos desde
 el primero de enero de 1970: “units: seconds since 1970-01-01 00:00:00”,
 por lo que la conversión apropiada sería
 
@@ -286,10 +300,12 @@ head(time)
     [1] "2019-01-01 UTC" "2019-01-02 UTC" "2019-01-03 UTC" "2019-01-04 UTC"
     [5] "2019-01-05 UTC" "2019-01-06 UTC"
 
-Aunque este proceso pudiera parecer complicado, se encuentra ya
-codificado en la función `read.cmems()` del paquete **satin**, que
-además prevee otros casos en los que el origen o las unidades pudieran
-ser diferentes (e.g. horas o días).
+Este proceso aunque no es complicado requiere varios pasos que se pueden
+implementar en una función que se ocupe de esto y de extraer el resto de
+la información del archivo netCDF. Un ejemplo es la función
+`read.cmems()` del paquete **satin**, que además prevee otros casos en
+los que el origen o las unidades pudieran ser diferentes (e.g. horas o
+días).
 
 ``` r
 # cargar paquete devtools
@@ -349,7 +365,7 @@ resolución espacial de 9.2 km. En total son 731 días, del primero de
 enero de 2019 al 31 de diciembre de 2020 y a 2 niveles de profundidad
 diferentes (0.49 y 1.54 m).
 
-Con la función `str()` podemos ver la estructura del objeto y sus
+Con la función `str()` podemos ver la estructura de `thetao` y sus
 diferentes componentes.
 
 ``` r
@@ -374,8 +390,8 @@ str(thetao)
 
 Podemos extraer los diferentes componentes (“slots”) de este objeto de
 clase S4 usando “@”. Por ejemplo el vector de latitudes `thetao@lat`, o
-los periodos (en este ejemplo solo algunos del inicio y otros del final
-de los 731 días).
+los periodos (en este ejemplo solo algunos al inicio y otros al final de
+los 731 días).
 
 ``` r
 head(thetao@period$tmStart); tail(thetao@period$tmStart)
@@ -389,7 +405,7 @@ head(thetao@period$tmStart); tail(thetao@period$tmStart)
 
 Hasta aquí solo hemos descrito la estructura de los datos importados y
 como las fechas se convirtieron a una clase formal apropiada
-(`"POSIXct"`). Ahora veremos las ventadas de esto. Para ello primero
+(`"POSIXct"`). Ahora veremos las ventajas de esto. Para ello primero
 haremos un mapa del primer periodo (por defecto) para elegir un punto y
 extraer los valores de temperatura en el nivel más superficial para
 todos los días contenidos en nuestros datos.
@@ -445,7 +461,7 @@ head(tsm)
 
 Si graficamos esta nueva tabla vemos como la fecha se ubica en el eje x
 y las etiquetas se ajustan al formato más conveniente (año-mes en este
-caso) para evitar una saturar el gráfico con texto.
+caso) para evitar saturar el gráfico con texto.
 
 ``` r
 plot(tsm, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2))
@@ -484,7 +500,9 @@ head(tsm)
     p6 2019-01-06    21.24976   1 2019
 
 Ahora el promedio por año podría obtenerse con la función `tapply()` o
-`aggregate()`.
+`aggregate()`. La diferencia entre estas funciones es que la primera
+devuelve una matriz (o arreglo cuando hay más de tres dimensiones) y la
+segunda un *data frame*.
 
 ``` r
 tapply(tsm$temperatura, tsm$año, mean)
@@ -493,7 +511,7 @@ tapply(tsm$temperatura, tsm$año, mean)
         2019     2020 
     25.20825 25.29060 
 
-En el caso del promedio mensual, sin considera el año sería
+En el caso del promedio mensual, sin considerar el año sería
 
 ``` r
 aggregate(tsm$temperatura, list(mes = tsm$mes), mean)
@@ -533,13 +551,13 @@ tapply(tsm$temperatura, list(tsm$mes, tsm$año), mean)
     11 26.10929 25.42008
     12 23.13966 22.43016
 
-Estos promedios se pueden también obtener con `aggregate()` que produce
-un *data frame* más apropiado para graficar.
+En este último caso la función `aggregate()` produce un *data frame* más
+apropiado para graficar.
 
 ``` r
-tsm.mens <- aggregate(tsm$temperatura, 
+tsmXmes <- aggregate(tsm$temperatura, 
                       by = list(mes = tsm$mes, año = tsm$año), mean)
-tsm.mens
+tsmXmes
 ```
 
        mes  año        x
@@ -568,11 +586,12 @@ tsm.mens
     23  11 2020 25.42008
     24  12 2020 22.43016
 
-Figura
+Para la figura necesitamos sin embargo combinar las columnas mes y año,
+definiendo un día (el 1 en este ejemplo).
 
 ``` r
-plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,
-     xlab = "mes", ylab = "Temperatura (°C)", type = "b")
+fecha <- as.Date(paste(tsmXmes$año, tsmXmes$mes, "01", sep = "-"))
+plot(fecha, tsmXmes$x, xlab = "mes", ylab = "Temperatura (°C)", type = "b", las = 1)
 ```
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-32-1.png)
@@ -580,7 +599,7 @@ plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,
 De igual manera podemos ilustrar el suavizado con promedios móviles
 usando la función `cma()` del paquete **smooth**. En este caso, como el
 vector suavizado queda del mismo tamaño que los datos podemos sobreponer
-ambos explotando la fecha.
+ambos aprovechando la fecha.
 
 ``` r
 library(smooth)
