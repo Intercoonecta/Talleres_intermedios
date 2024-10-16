@@ -105,7 +105,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-16 09:44:10 MST"
+    [1] "2024-10-16 12:22:37 MST"
 
 La función `as.Date()` descarta la hora. Aquí se especifica la zona de
 tiempo de la configuración local de la computadora donde se creó este
@@ -266,7 +266,7 @@ más fácil de leer para el humano.
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
 
-Una vez explicadas las clases especializadas para fechas-tiempo en R,
+Una vez explicadas las clases especializadas para fecha-tiempo en R,
 vamos a ilustrar la manipulación de este tipo de información utilizando
 el producto *Global Ocean Physics Reanalysis*
 (<https://doi.org/10.48670/moi-00021>) de Copernicus
@@ -287,10 +287,13 @@ head(time)
 
     [1] 1546300800 1546387200 1546473600 1546560000 1546646400 1546732800
 
-Inspeccionando un poco el archivo (tecleando `ncf` en la consola de R)
-podemos notar que estos valores corresponden al número de segundos desde
-el primero de enero de 1970: “units: seconds since 1970-01-01 00:00:00”,
-por lo que la conversión apropiada sería
+Inspeccionando un poco la información contenida en el archivo (tecleando
+`ncf` en la consola de R) podemos notar que estos valores corresponden
+al número de segundos desde el primero de enero de 1970
+
+<img src="ncf.png" data-fig-align="center" />
+
+Enotnces, la conversión apropiada sería
 
 ``` r
 time <- as.POSIXct(time, tz = "UTC", origin = "1970-01-01 00:00:00")
@@ -403,12 +406,8 @@ head(thetao@period$tmStart); tail(thetao@period$tmStart)
     [1] "2020-12-26 UTC" "2020-12-27 UTC" "2020-12-28 UTC" "2020-12-29 UTC"
     [5] "2020-12-30 UTC" "2020-12-31 UTC"
 
-Hasta aquí solo hemos descrito la estructura de los datos importados y
-como las fechas se convirtieron a una clase formal apropiada
-(`"POSIXct"`). Ahora veremos las ventajas de esto. Para ello primero
-haremos un mapa del primer periodo (por defecto) para elegir un punto y
-extraer los valores de temperatura en el nivel más superficial para
-todos los días contenidos en nuestros datos.
+Para tener una impresión gráfica de los datos importados, podemos hacer
+un mapa de las temperaturas en el primer día de 2019 (por defecto).
 
 ``` r
 plot(thetao)
@@ -416,7 +415,16 @@ plot(thetao)
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-22-1.png)
 
-Tomemos por ejemplo un pixel a los 26° de lat N y 110° de lon W
+### Serie de tiempo en un pixel
+
+Hasta aquí solo hemos descrito la estructura de los datos importados y
+como las fechas se convirtieron a una clase apropiada (`"POSIXct"`).
+Ahora veremos las ventajas de esto, para lo cual vamos a elegir un punto
+del mapa anterior y extraeremos los valores de temperatura en el nivel
+más superficial para todos los días contenidos en nuestros datos.
+
+Tomemos por ejemplo el pixel con coordenadas 26° de lat N y 110° de lon
+W.
 
 ``` r
 pt <- data.frame(x = -110, y = 26)
@@ -442,7 +450,7 @@ sst[ , 1:10]
     1  1 -110 26 0 -110  26 21.68557 21.6072 21.40651 21.27906
 
 Para representar la serie de tiempo de la temperatura potencial en
-superficie podemos rearreglar los datos extraídos incluyendo el periodo
+superficie podemos re-arreglar los datos extraídos incluyendo el periodo
 correspondiente de la siguiente manera.
 
 ``` r
@@ -469,9 +477,11 @@ plot(tsm, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2))
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-26-1.png)
 
+### Promedios anuales y mensuales
+
 Ahora, el paquete **lubridate** nos permite manipular de manera sencilla
 las fechas. Por ejemplo, si quisiéramos calcular promedios de
-temperatura por año o mes, necesitaríamos primero extraer de la columna
+temperatura por año o mes, necesitamos primero extraer de la columna
 fecha esta información.
 
 ``` r
@@ -531,7 +541,7 @@ aggregate(tsm$temperatura, list(mes = tsm$mes), mean)
     11  11 25.76468
     12  12 22.78491
 
-y finalmente, por año
+y finalmente, por año y mes
 
 ``` r
 tapply(tsm$temperatura, list(tsm$mes, tsm$año), mean)
@@ -586,8 +596,8 @@ tsmXmes
     23  11 2020 25.42008
     24  12 2020 22.43016
 
-Para la figura necesitamos sin embargo combinar las columnas mes y año,
-definiendo un día (el 1 en este ejemplo).
+Necesitamos combinar las columnas mes y año, definiendo además un día
+(el 1 en este ejemplo) para posicionar las etiquetas en un gráfico.
 
 ``` r
 fecha <- as.Date(paste(tsmXmes$año, tsmXmes$mes, "01", sep = "-"))
@@ -595,6 +605,8 @@ plot(fecha, tsmXmes$x, xlab = "mes", ylab = "Temperatura (°C)", type = "b", las
 ```
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-32-1.png)
+
+### Suavizado con promedios móviles
 
 De igual manera podemos ilustrar el suavizado con promedios móviles
 usando la función `cma()` del paquete **smooth**. En este caso, como el
@@ -628,5 +640,205 @@ lines(tsm$fecha, tsm$sm, lwd = 2)
 ```
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-33-1.png)
+
+### Extracción de periodicidades
+
+Existen varios métodos para modelar estacionalidad en series de tiempo.
+Aquí vamos a ejemplificar la regresión periódica con descenso cíclico
+mediante el paquete **periods**.
+
+``` r
+## Instalación
+
+# library(devtools)
+# install_github("hvillalo/periods")
+
+library(periods)
+```
+
+Primero se calculan los periodos con descenso cíclico.
+
+``` r
+tsm.cd <- cyclicDescent(x = tsm$temperatura, plots = FALSE)
+```
+
+En el resultado (`harmonics`) se muestran en orden los componentes
+armónicos detectados (periodo, amplitud, fase y retraso, así como la
+suma de cuadrados residual y R<sup>2</sup>, mientras que en `Stats` se
+presentan las pruebas de significancia para cada componente encontrado.
+
+``` r
+tsm.cd$harmonics
+```
+
+               Period  Amplitude      Phase         Lag       RSS      R.sq
+    Model 1 :     363 5.53962004 -2.1355324 -123.376637 429.10038 0.9630722
+    Model 2 :     132 0.51127884 -0.7341400  -15.423145 333.67437 0.9712844
+    Model 3 :      90 0.35653841  1.6398406   23.488986 287.69639 0.9752412
+    Model 4 :     117 0.31176812 -2.9795496  -55.482576 251.91652 0.9783204
+    Model 5 :      53 0.29857080  2.6905940   22.695731 219.68321 0.9810943
+    Model 6 :      25 0.22681779 -2.1299689   -8.474877 200.77993 0.9827211
+    Model 7 :     192 0.22416433  2.8309269   86.506755 183.02382 0.9842492
+    Model 8 :     146 0.21648411  1.9001044   44.152007 165.91422 0.9857216
+    Model 9 :      41 0.19001763 -0.9177527   -5.988660 152.78050 0.9868519
+    Model 10 :     80 0.18362779  0.8177197   10.411531 140.33043 0.9879233
+    Model 11 :     46 0.16759959 -2.0047623  -14.677121 130.00192 0.9888122
+    Model 12 :     30 0.16788337  1.7923526    8.557853 119.67624 0.9897008
+    Model 13 :     58 0.13355852 -3.0607668  -28.253897 113.11520 0.9902654
+    Model 14 :    277 0.12894840  1.6701653   73.630771 107.25316 0.9907699
+    Model 15 :     33 0.11097450  0.5067448    2.661481 102.72562 0.9911596
+    Model 16 :     23 0.10844718  1.5096783    5.526274  98.41499 0.9915305
+    Model 17 :     27 0.10714447 -2.2291257   -9.578962  94.21428 0.9918920
+    Model 18 :     64 0.10549147  0.5589248    5.693161  90.14844 0.9922419
+    Model 19 :     18 0.09923891 -1.6128721   -4.620538  86.55280 0.9925514
+    Model 20 :     37 0.09569818 -1.7871275  -10.523916  83.18923 0.9928408
+    Model 21 :    108 0.09186436  1.7891347   30.752960  80.12343 0.9931047
+    Model 22 :     35 0.08713256  3.1077739   17.311615  77.36099 0.9933424
+    Model 23 :     20 0.08576853  0.6583060    2.095453  74.66944 0.9935740
+    Model 24 :     24 0.08467708  1.3178405    5.033780  72.04559 0.9937998
+    Model 25 :     11 0.07548232 -1.2157007   -2.128333  69.96178 0.9939792
+    Model 26 :     29 0.07069827  2.4833632   11.461947  68.14559 0.9941355
+    Model 27 :     50 0.06680855  1.3085546   10.413147  66.51625 0.9942757
+    Model 28 :     22 0.06071827 -1.0716867   -3.752413  65.17364 0.9943912
+    Model 29 :    366 0.05922502  2.7074685  157.711959  63.89275 0.9945015
+    Model 30 :     31 0.06006523  2.3891671   11.787681  62.57669 0.9946147
+
+``` r
+tsm.cd$Stats
+```
+
+                              F dfn dfd   p.value
+    Models 1 & 2 :   103.812707   2 726 < 2.2e-16
+    Models 2 & 3 :    57.852762   2 724 < 2.2e-16
+    Models 3 & 4 :    51.273074   2 722 < 2.2e-16
+    Models 4 & 5 :    52.821468   2 720 < 2.2e-16
+    Models 5 & 6 :    33.799584   2 718 9.365e-15
+    Models 6 & 7 :    34.731479   2 716 4.017e-15
+    Models 7 & 8 :    36.814962   2 714 6.071e-16
+    Models 8 & 9 :    30.603424   2 712 1.777e-13
+    Models 9 & 10 :   31.495475   2 710 7.849e-14
+    Models 10 & 11 :  28.124924   2 708 1.764e-12
+    Models 11 & 12 :  30.456867   2 706 2.054e-13
+    Models 12 & 13 :  20.417119   2 704 2.402e-09
+    Models 13 & 14 :  19.184301   2 702 7.728e-09
+    Models 14 & 15 :  15.425941   2 700 2.780e-07
+    Models 15 & 16 :  15.286368   2 698 3.180e-07
+    Models 16 & 17 :  15.516215   2 696 2.554e-07
+    Models 17 & 18 :  15.650250   2 694 2.249e-07
+    Models 18 & 19 :  14.373781   2 692 7.651e-07
+    Models 19 & 20 :  13.949319   2 690 1.151e-06
+    Models 20 & 21 :  13.162619   2 688 2.456e-06
+    Models 21 & 22 :  12.248000   2 686 5.936e-06
+    Models 22 & 23 :  12.327788   2 684 5.500e-06
+    Models 23 & 24 :  12.418968   2 682 5.040e-06
+    Models 24 & 25 :  10.126934   2 680 4.636e-05
+    Models 25 & 26 :   9.034878   2 678 0.0001341
+    Models 26 & 27 :   8.279457   2 676 0.0002803
+    Models 27 & 28 :   6.942335   2 674 0.0010366
+    Models 28 & 29 :   6.735990   2 672 0.0012692
+    Models 29 & 30 :   7.045401   2 670 0.0009375
+
+Cuando se define cuales son los periodos de interés se hace una
+estimación global mediante el modelo de regresión periódica. En este
+ejemplo consideraremos solo los primeros 10 periodos.
+
+``` r
+op <- tsm.cd$harmonics$Period[1:10] # periodos de interés
+perReg <-periodicRegModel(x = tsm$temperatura, periods = op) # modelo
+perReg$model
+```
+
+    x ~ 0 + cos(2 * pi/363 * t) + sin(2 * pi/363 * t) + cos(2 * pi/132 * 
+        t) + sin(2 * pi/132 * t) + cos(2 * pi/90 * t) + sin(2 * pi/90 * 
+        t) + cos(2 * pi/117 * t) + sin(2 * pi/117 * t) + cos(2 * 
+        pi/53 * t) + sin(2 * pi/53 * t) + cos(2 * pi/25 * t) + sin(2 * 
+        pi/25 * t) + cos(2 * pi/192 * t) + sin(2 * pi/192 * t) + 
+        cos(2 * pi/146 * t) + sin(2 * pi/146 * t) + cos(2 * pi/41 * 
+        t) + sin(2 * pi/41 * t) + cos(2 * pi/80 * t) + sin(2 * pi/80 * 
+        t)
+    <environment: 0x0000024d877af488>
+
+El ajuste se hace por regresión lineal múltiple con la función `lm()`.
+
+``` r
+ajuste <- lm(perReg$model, data = perReg$data)
+summary(ajuste)
+```
+
+
+    Call:
+    lm(formula = perReg$model, data = perReg$data)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -1.52147 -0.24382  0.02979  0.31159  1.64692 
+
+    Coefficients:
+                         Estimate Std. Error  t value Pr(>|t|)    
+    cos(2 * pi/363 * t) -2.952754   0.024922 -118.482  < 2e-16 ***
+    sin(2 * pi/363 * t) -4.675424   0.023353 -200.206  < 2e-16 ***
+    cos(2 * pi/132 * t)  0.367903   0.037413    9.834  < 2e-16 ***
+    sin(2 * pi/132 * t) -0.260109   0.042693   -6.093 1.82e-09 ***
+    cos(2 * pi/90 * t)  -0.023047   0.024219   -0.952 0.341603    
+    sin(2 * pi/90 * t)   0.369025   0.024640   14.977  < 2e-16 ***
+    cos(2 * pi/117 * t) -0.236709   0.031645   -7.480 2.20e-13 ***
+    sin(2 * pi/117 * t) -0.007841   0.031693   -0.247 0.804667    
+    cos(2 * pi/53 * t)  -0.252565   0.023254  -10.861  < 2e-16 ***
+    sin(2 * pi/53 * t)   0.130635   0.023212    5.628 2.63e-08 ***
+    cos(2 * pi/25 * t)  -0.124179   0.023074   -5.382 1.00e-07 ***
+    sin(2 * pi/25 * t)  -0.193043   0.023052   -8.374 2.95e-16 ***
+    cos(2 * pi/192 * t) -0.244085   0.024928   -9.792  < 2e-16 ***
+    sin(2 * pi/192 * t)  0.044835   0.024131    1.858 0.063588 .  
+    cos(2 * pi/146 * t) -0.140081   0.038602   -3.629 0.000305 ***
+    sin(2 * pi/146 * t)  0.209774   0.033687    6.227 8.12e-10 ***
+    cos(2 * pi/41 * t)   0.122831   0.023149    5.306 1.50e-07 ***
+    sin(2 * pi/41 * t)  -0.152534   0.023090   -6.606 7.74e-11 ***
+    cos(2 * pi/80 * t)   0.134583   0.023634    5.694 1.81e-08 ***
+    sin(2 * pi/80 * t)   0.139917   0.023961    5.839 7.97e-09 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 0.4403 on 711 degrees of freedom
+    Multiple R-squared:  0.9881,    Adjusted R-squared:  0.9878 
+    F-statistic:  2961 on 20 and 711 DF,  p-value: < 2.2e-16
+
+Quedando el modelo ajustado de la siguiente manera.
+
+``` r
+plot_periodicReg(ajuste)
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-39-1.png)
+
+Si interesa ver los componentes armónicos finales, se usa la función
+`harmonics()`.
+
+``` r
+harmonics(ajuste)
+```
+
+    $cyclic_components
+       Period Amplitude      Phase         Lag
+    1     363 5.5297689 -2.1340903 -123.293319
+    2     132 0.4505649 -0.6154111  -12.928834
+    3      90 0.3697438  1.6331704   23.393443
+    5      53 0.2843491  2.6642548   22.473554
+    8     146 0.2522457  2.1595624   50.180933
+    7     192 0.2481684  2.9599315   90.448845
+    4     117 0.2368391 -3.1084794  -57.883395
+    6      25 0.2295344 -2.1424250   -8.524438
+    9      41 0.1958420 -0.8928487   -5.826153
+    10     80 0.1941377  0.8048282   10.247391
+
+Podemos por último generar un gráfico final recuperando la información
+de la fecha y sumando la media de temperaturas que durante el proceso
+del descenso cíclico se removió.
+
+``` r
+plot(tsm[, 1:2], type = "b", col = "grey50")
+lines(tsm$fecha, fitted(ajuste) + mean(tsm$temperatura), col = "blue", lwd = 2)
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-41-1.png)
 
   
