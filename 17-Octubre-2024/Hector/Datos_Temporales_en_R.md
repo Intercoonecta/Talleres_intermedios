@@ -105,7 +105,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-16 12:22:37 MST"
+    [1] "2024-10-16 12:40:12 MST"
 
 La función `as.Date()` descarta la hora. Aquí se especifica la zona de
 tiempo de la configuración local de la computadora donde se creó este
@@ -289,7 +289,7 @@ head(time)
 
 Inspeccionando un poco la información contenida en el archivo (tecleando
 `ncf` en la consola de R) podemos notar que estos valores corresponden
-al número de segundos desde el primero de enero de 1970
+al número de segundos desde el primero de enero de 1970.
 
 <img src="ncf.png" data-fig-align="center" />
 
@@ -397,11 +397,15 @@ los periodos (en este ejemplo solo algunos al inicio y otros al final de
 los 731 días).
 
 ``` r
-head(thetao@period$tmStart); tail(thetao@period$tmStart)
+head(thetao@period$tmStart)
 ```
 
     [1] "2019-01-01 UTC" "2019-01-02 UTC" "2019-01-03 UTC" "2019-01-04 UTC"
     [5] "2019-01-05 UTC" "2019-01-06 UTC"
+
+``` r
+tail(thetao@period$tmStart)
+```
 
     [1] "2020-12-26 UTC" "2020-12-27 UTC" "2020-12-28 UTC" "2020-12-29 UTC"
     [5] "2020-12-30 UTC" "2020-12-31 UTC"
@@ -418,7 +422,7 @@ plot(thetao)
 ### Serie de tiempo en un pixel
 
 Hasta aquí solo hemos descrito la estructura de los datos importados y
-como las fechas se convirtieron a una clase apropiada (`"POSIXct"`).
+cómo las fechas se convirtieron a una clase apropiada (`"POSIXct"`).
 Ahora veremos las ventajas de esto, para lo cual vamos a elegir un punto
 del mapa anterior y extraeremos los valores de temperatura en el nivel
 más superficial para todos los días contenidos en nuestros datos.
@@ -597,7 +601,7 @@ tsmXmes
     24  12 2020 22.43016
 
 Necesitamos combinar las columnas mes y año, definiendo además un día
-(el 1 en este ejemplo) para posicionar las etiquetas en un gráfico.
+(el 1ero en este ejemplo) para posicionar las etiquetas en un gráfico.
 
 ``` r
 fecha <- as.Date(paste(tsmXmes$año, tsmXmes$mes, "01", sep = "-"))
@@ -738,14 +742,14 @@ tsm.cd$Stats
     Models 28 & 29 :   6.735990   2 672 0.0012692
     Models 29 & 30 :   7.045401   2 670 0.0009375
 
-Cuando se define cuales son los periodos de interés se hace una
+Cuando se definen cuales son los periodos de interés se hace una
 estimación global mediante el modelo de regresión periódica. En este
 ejemplo consideraremos solo los primeros 10 periodos.
 
 ``` r
 op <- tsm.cd$harmonics$Period[1:10] # periodos de interés
-perReg <-periodicRegModel(x = tsm$temperatura, periods = op) # modelo
-perReg$model
+perReg <-periodicRegModel(x = tsm$temperatura, periods = op) 
+perReg$model # modelo a justar
 ```
 
     x ~ 0 + cos(2 * pi/363 * t) + sin(2 * pi/363 * t) + cos(2 * pi/132 * 
@@ -756,7 +760,7 @@ perReg$model
         cos(2 * pi/146 * t) + sin(2 * pi/146 * t) + cos(2 * pi/41 * 
         t) + sin(2 * pi/41 * t) + cos(2 * pi/80 * t) + sin(2 * pi/80 * 
         t)
-    <environment: 0x0000024d877af488>
+    <environment: 0x000001dd43a25300>
 
 El ajuste se hace por regresión lineal múltiple con la función `lm()`.
 
@@ -810,7 +814,7 @@ plot_periodicReg(ajuste)
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-39-1.png)
 
-Si interesa ver los componentes armónicos finales, se usa la función
+Si nos interesa ver los componentes armónicos finales, se usa la función
 `harmonics()`.
 
 ``` r

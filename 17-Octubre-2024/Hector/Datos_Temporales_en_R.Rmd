@@ -137,7 +137,7 @@ time <- ncf$dim$time$vals
 head(time)
 ```
 
-Inspeccionando un poco la información contenida en el archivo (tecleando `ncf` en la consola de R) podemos notar que estos valores corresponden al número de segundos desde el primero de enero de 1970
+Inspeccionando un poco la información contenida en el archivo (tecleando `ncf` en la consola de R) podemos notar que estos valores corresponden al número de segundos desde el primero de enero de 1970.
 
 ![](ncf.png){fig-align="center"}
 
@@ -190,7 +190,8 @@ str(thetao)
 Podemos extraer los diferentes componentes ("slots") de este objeto de clase S4 usando "\@". Por ejemplo el vector de latitudes `thetao@lat`, o los periodos (en este ejemplo solo algunos al inicio y otros al final de los 731 días).
 
 ```{r}
-head(thetao@period$tmStart); tail(thetao@period$tmStart)
+head(thetao@period$tmStart)
+tail(thetao@period$tmStart)
 ```
 
 Para tener una impresión gráfica de los datos importados, podemos hacer un mapa de las temperaturas en el primer día de 2019 (por defecto).
@@ -201,7 +202,7 @@ plot(thetao)
 
 ### Serie de tiempo en un pixel
 
-Hasta aquí solo hemos descrito la estructura de los datos importados y como las fechas se convirtieron a una clase apropiada (`"POSIXct"`). Ahora veremos las ventajas de esto, para lo cual vamos a elegir un punto del mapa anterior y extraeremos los valores de temperatura en el nivel más superficial para todos los días contenidos en nuestros datos.
+Hasta aquí solo hemos descrito la estructura de los datos importados y cómo las fechas se convirtieron a una clase apropiada (`"POSIXct"`). Ahora veremos las ventajas de esto, para lo cual vamos a elegir un punto del mapa anterior y extraeremos los valores de temperatura en el nivel más superficial para todos los días contenidos en nuestros datos.
 
 Tomemos por ejemplo el pixel con coordenadas 26° de lat N y 110° de lon W.
 
@@ -268,7 +269,7 @@ tsmXmes <- aggregate(tsm$temperatura,
 tsmXmes
 ```
 
-Necesitamos combinar las columnas mes y año, definiendo además un día (el 1 en este ejemplo) para posicionar las etiquetas en un gráfico.
+Necesitamos combinar las columnas mes y año, definiendo además un día (el 1ero en este ejemplo) para posicionar las etiquetas en un gráfico.
 
 ```{r}
 fecha <- as.Date(paste(tsmXmes$año, tsmXmes$mes, "01", sep = "-"))
@@ -315,12 +316,12 @@ tsm.cd$harmonics
 tsm.cd$Stats
 ```
 
-Cuando se define cuales son los periodos de interés se hace una estimación global mediante el modelo de regresión periódica. En este ejemplo consideraremos solo los primeros 10 periodos.
+Cuando se definen cuales son los periodos de interés se hace una estimación global mediante el modelo de regresión periódica. En este ejemplo consideraremos solo los primeros 10 periodos.
 
 ```{r}
 op <- tsm.cd$harmonics$Period[1:10] # periodos de interés
-perReg <-periodicRegModel(x = tsm$temperatura, periods = op) # modelo
-perReg$model
+perReg <-periodicRegModel(x = tsm$temperatura, periods = op) 
+perReg$model # modelo a justar
 ```
 
 El ajuste se hace por regresión lineal múltiple con la función `lm()`.
@@ -336,7 +337,7 @@ Quedando el modelo ajustado de la siguiente manera.
 plot_periodicReg(ajuste)
 ```
 
-Si interesa ver los componentes armónicos finales, se usa la función `harmonics()`.
+Si nos interesa ver los componentes armónicos finales, se usa la función `harmonics()`.
 
 ```{r}
 harmonics(ajuste)
