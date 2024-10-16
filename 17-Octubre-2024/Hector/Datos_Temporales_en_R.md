@@ -98,7 +98,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-14 20:10:18 MST"
+    [1] "2024-10-15 18:28:11 MST"
 
 Al aplicar la función `as.Date()` la hora se descarta.
 
@@ -106,7 +106,7 @@ Al aplicar la función `as.Date()` la hora se descarta.
 as.Date(ahora)
 ```
 
-    [1] "2024-10-15"
+    [1] "2024-10-16"
 
 ## La clase `"POSIXlt"`
 
@@ -243,13 +243,40 @@ más fácil de leer para el humano.
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
 
 Para ilustrar la manipulación de datos temporales utilizaremos
-información de la temperatura potencial diaria del producto *Global
-Ocean Physics Reanalysis*\[^1\] de Copernicus
-(<https://marine.copernicus.eu/>)
+información del producto *Global Ocean Physics Reanalysis*
+(<https://doi.org/10.48670/moi-00021>) de Copernicus
+(<https://marine.copernicus.eu/>).
 
-\[^1\]: https://doi.org/10.48670/moi-00021
+El archivo netCDF proporcionado contiene datos diarios de temperatura
+potencial para una región del Golfo de California, México. El periodo
+abarca del primero de enero de 2019 al 31 de diciembre de 2020. En este
+archivo la información de la fecha podemos verla con el siguiente código
 
-Datos diarios de temperatura
+``` r
+library(ncdf4)
+ncf <- nc_open("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
+time <- ncf$dim$time$vals
+head(time)
+```
+
+    [1] 1546300800 1546387200 1546473600 1546560000 1546646400 1546732800
+
+Inspeccionando un poco el archivo (tecleando ncf en la consola) podemos
+notar que estos números son: “units: seconds since 1970-01-01 00:00:00”,
+por lo que la conversión apropiada sería
+
+``` r
+time <- as.POSIXct(time, tz = "UTC", format = "%Y-%m-%d", 
+                   origin = "1970-01-01 00:00:00")
+head(time)
+```
+
+    [1] "2019-01-01 UTC" "2019-01-02 UTC" "2019-01-03 UTC" "2019-01-04 UTC"
+    [5] "2019-01-05 UTC" "2019-01-06 UTC"
+
+El proceso anterior se encuentra codificado en la función `read.cmems()`
+del paquete **satin**, que además prevee otros casos en los que el
+origen o las unidades (horas, días) pudieran ser diferentes.
 
 ``` r
 # cargar paquete devtools
@@ -262,13 +289,14 @@ Datos diarios de temperatura
 library(satin)
 ```
 
-Importar datos de Copernicus
+Importar el archivo netCDF anterior con la función `read.cmems()`.
 
 ``` r
 thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
 ```
 
-inspeccionar objeto thetao
+Ahora inspeccionamos el archivo importado, comenzando por la clase del
+objeto `"thetao"`.
 
 ``` r
 class(thetao)
@@ -278,7 +306,7 @@ class(thetao)
     attr(,"package")
     [1] "satin"
 
-usaremos la temperatura potencial, thetao
+y su contenido…
 
 ``` r
 thetao
@@ -301,7 +329,11 @@ thetao
     min -112.0000  22 13.78762 2019-01-01 0.494025
     max -107.0833  27 32.84582 2020-12-31 1.541375
 
-En este tenemos 731 días , del 2019-01-01 al 2020-12-31
+Podemos ver que tenemos datos diarios de temperatura en °C, con una
+resolución espacial de 9.2 km. En total son 731 días , del 2019-01-01 al
+2020-12-31 y a 2 niveles de profundidad diferentes, 0.49 y 1.54 m. En
+este objeto de clase S4 podemos extraer sus diferentes componentes
+(“slots”) usando “@”:
 
 ``` r
 head(thetao@period$tmStart); tail(thetao@period$tmStart)
@@ -320,7 +352,7 @@ temperatura en el nivel más superficial
 plot(thetao)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-19-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-21-1.png)
 
 Tomemos por ejemplo un pixel a los 26° de lat N y 110° de lon W
 
@@ -370,7 +402,7 @@ Figura
 plot(tsm, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2))
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-23-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-25-1.png)
 
 Si quisieramos los promedios mensuales
 
@@ -427,7 +459,7 @@ plot(tsm$fecha, tsm$temperatura, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
 lines(tsm$fecha, tsm$sm, lwd = 2)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-25-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-27-1.png)
 
 Agregar por año mes
 
@@ -467,6 +499,6 @@ plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,
      xlab = "mes", ylab = "temperatura (°C)", type = "b")
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-27-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-29-1.png)
 
   

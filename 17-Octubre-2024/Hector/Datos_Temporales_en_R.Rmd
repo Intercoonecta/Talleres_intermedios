@@ -19,7 +19,7 @@ Lo importante en todos los casos es la consistencia, y sobretodo no invertir el 
 
 Al importar en R desde archivos ascii con la función `read.table()`, la clase de la variable con la fecha será `"character"`, lo cual dificultará su uso en gráficos o para realizar operaciones, por lo que debemos convertirlos a una clase apropiada para fecha o fecha-tiempo. En cambio, al importar archivos Excel con la función `read_excel()` del paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el formato no es ambiguo. A continuación se describen algunas de estas clases especializadas.
 
-## Clase `"Date"` 
+## Clase `"Date"`
 
 Esta es tal vez la clase más sencilla cuando solo tenemos fechas.
 
@@ -122,11 +122,26 @@ De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente para incl
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
 
-Para ilustrar la manipulación de datos temporales utilizaremos información de la temperatura potencial diaria del producto *Global Ocean Physics Reanalysis*\[\^1\] de Copernicus (<https://marine.copernicus.eu/>)
+Para ilustrar la manipulación de datos temporales utilizaremos información del producto *Global Ocean Physics Reanalysis* (<https://doi.org/10.48670/moi-00021>) de Copernicus (<https://marine.copernicus.eu/>).
 
-\[\^1\]: https://doi.org/10.48670/moi-00021
+El archivo netCDF proporcionado contiene datos diarios de temperatura potencial para una región del Golfo de California, México. El periodo abarca del primero de enero de 2019 al 31 de diciembre de 2020. En este archivo la información de la fecha podemos verla con el siguiente código
 
-Datos diarios de temperatura
+```{r}
+library(ncdf4)
+ncf <- nc_open("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
+time <- ncf$dim$time$vals
+head(time)
+```
+
+Inspeccionando un poco el archivo (tecleando ncf en la consola) podemos notar que estos números son: "units: seconds since 1970-01-01 00:00:00", por lo que la conversión apropiada sería
+
+```{r}
+time <- as.POSIXct(time, tz = "UTC", format = "%Y-%m-%d", 
+                   origin = "1970-01-01 00:00:00")
+head(time)
+```
+
+El proceso anterior se encuentra codificado en la función `read.cmems()` del paquete **satin**, que además prevee otros casos en los que el origen o las unidades (horas, días) pudieran ser diferentes.
 
 ```{r}
 # cargar paquete devtools
@@ -139,25 +154,25 @@ Datos diarios de temperatura
 library(satin)
 ```
 
-Importar datos de Copernicus
+Importar el archivo netCDF anterior con la función `read.cmems()`.
 
 ```{r}
 thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
 ```
 
-inspeccionar objeto thetao
+Ahora inspeccionamos el archivo importado, comenzando por la clase del objeto `"thetao"`.
 
 ```{r}
 class(thetao)
 ```
 
-usaremos la temperatura potencial, thetao
+y su contenido...
 
 ```{r}
 thetao
 ```
 
-En este tenemos 731 días , del 2019-01-01 al 2020-12-31
+Podemos ver que tenemos datos diarios de temperatura en °C, con una resolución espacial de 9.2 km. En total son 731 días , del 2019-01-01 al 2020-12-31 y a 2 niveles de profundidad diferentes, 0.49 y 1.54 m. En este objeto de clase S4 podemos extraer sus diferentes componentes ("slots") usando "\@":
 
 ```{r}
 head(thetao@period$tmStart); tail(thetao@period$tmStart)
