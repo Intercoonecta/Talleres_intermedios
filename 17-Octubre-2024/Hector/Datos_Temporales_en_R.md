@@ -28,11 +28,10 @@ importar los datos en R.
 Al importar en R desde archivos ascii con la función `read.table()`, la
 clase de la variable con la fecha será `"character"`, lo cual
 dificultará su uso en gráficos o para realizar operaciones, por lo que
-debemos convertirlos a una clase apropiada para fecha o fecha-tiempo. En
-cambio, al importar archivos Excel con la función `read_excel()` del
-paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el
-formato no es ambiguo. A continuación se describen algunas de estas
-clases especializadas.
+debemos convertirlos a una clase apropiada. En cambio, al importar
+archivos Excel con la función `read_excel()` del paquete **readxl**
+usualmente ya pasan como clase `"POSIXct"`, si el formato no es ambiguo.
+A continuación se describen algunas de estas clases especializadas.
 
 ## Clase `"Date"`
 
@@ -53,7 +52,11 @@ class(fechas)
 
     [1] "character"
 
-La conversión a la clase `"Date"` se logra con la función `as.Date().`
+La conversión a la clase `"Date"` se logra con la función `as.Date()`.
+Esta función trata de determinar que parte de la cadena de texto
+representa al día, al mes y al año, aunque de igual manera podemos
+especificarlo nosotros mediante el argumento `format = "%Y-%m-%d"` que
+veremos más adelante.
 
 ``` r
 fechas <- as.Date(fechas)
@@ -98,7 +101,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2024-10-15 18:28:11 MST"
+    [1] "2024-10-15 19:54:31 MST"
 
 Al aplicar la función `as.Date()` la hora se descarta.
 
@@ -133,7 +136,15 @@ class(dt)
 
     [1] "POSIXlt" "POSIXt" 
 
-Pare ver los vectores mencionados antes, usamos nuevamente la función
+Aquí vemos de nueva cuenta el uso del argumento `format` indicando que
+el año está primero e incluye la centuria (`%Y`), seguido del mes como
+número de dos dígitos (`%m`) y el día (`%d`) separados por un guión.
+Después siguen los códigos para la hora (`%H`), minutos (`%M`) y
+segundos (`%S`). Si nuestra cadena de texto hubiera sido “24-Oct.-18” el
+formato cambiaría a `"%y-%b-%d"`. Estos códigos y otros más se puden
+consultar en la ayuda de la función `strptime()`.
+
+Para ver los vectores mencionados antes, usamos nuevamente la función
 `unclass()`.
 
 ``` r
@@ -247,10 +258,11 @@ información del producto *Global Ocean Physics Reanalysis*
 (<https://doi.org/10.48670/moi-00021>) de Copernicus
 (<https://marine.copernicus.eu/>).
 
-El archivo netCDF proporcionado contiene datos diarios de temperatura
-potencial para una región del Golfo de California, México. El periodo
-abarca del primero de enero de 2019 al 31 de diciembre de 2020. En este
-archivo la información de la fecha podemos verla con el siguiente código
+El archivo netCDF proporcionado (en la carpeta “datos”) contiene valores
+diarios de temperatura potencial para una región del Golfo de
+California, México. El periodo abarca del primero de enero de 2019 al 31
+de diciembre de 2020. En este archivo la información de la fecha podemos
+verla con el siguiente código.
 
 ``` r
 library(ncdf4)
@@ -261,22 +273,23 @@ head(time)
 
     [1] 1546300800 1546387200 1546473600 1546560000 1546646400 1546732800
 
-Inspeccionando un poco el archivo (tecleando ncf en la consola) podemos
-notar que estos números son: “units: seconds since 1970-01-01 00:00:00”,
+Inspeccionando un poco el archivo (tecleando `ncf` en la consola de R)
+podemos notar que estos números corresponden al número de segundos desde
+el primero de enero de 1970: “units: seconds since 1970-01-01 00:00:00”,
 por lo que la conversión apropiada sería
 
 ``` r
-time <- as.POSIXct(time, tz = "UTC", format = "%Y-%m-%d", 
-                   origin = "1970-01-01 00:00:00")
+time <- as.POSIXct(time, tz = "UTC", origin = "1970-01-01 00:00:00")
 head(time)
 ```
 
     [1] "2019-01-01 UTC" "2019-01-02 UTC" "2019-01-03 UTC" "2019-01-04 UTC"
     [5] "2019-01-05 UTC" "2019-01-06 UTC"
 
-El proceso anterior se encuentra codificado en la función `read.cmems()`
-del paquete **satin**, que además prevee otros casos en los que el
-origen o las unidades (horas, días) pudieran ser diferentes.
+Aunque este proceso pudiera parecer complicado, se encuentra ya
+codificado en la función `read.cmems()` del paquete **satin**, que
+además prevee otros casos en los que el origen o las unidades pudieran
+ser diferentes (e.g. horas o días).
 
 ``` r
 # cargar paquete devtools
@@ -289,7 +302,9 @@ origen o las unidades (horas, días) pudieran ser diferentes.
 library(satin)
 ```
 
-Importar el archivo netCDF anterior con la función `read.cmems()`.
+Importar el archivo netCDF anterior con la función `read.cmems()`, que
+se encarga entre otras cosas de identificar el formato en que las fechas
+están almacenadas.
 
 ``` r
 thetao <- read.cmems("./datos/cmems_mod_glo_phy_my_0.083deg_P1D-m_1728505215428.nc")
@@ -306,7 +321,7 @@ class(thetao)
     attr(,"package")
     [1] "satin"
 
-y su contenido…
+Tecleando su nombre obtenemos un resumen de su contenido.
 
 ``` r
 thetao
@@ -330,10 +345,37 @@ thetao
     max -107.0833  27 32.84582 2020-12-31 1.541375
 
 Podemos ver que tenemos datos diarios de temperatura en °C, con una
-resolución espacial de 9.2 km. En total son 731 días , del 2019-01-01 al
-2020-12-31 y a 2 niveles de profundidad diferentes, 0.49 y 1.54 m. En
-este objeto de clase S4 podemos extraer sus diferentes componentes
-(“slots”) usando “@”:
+resolución espacial de 9.2 km. En total son 731 días, del primero de
+enero de 2019 al 31 de diciembre de 2020 y a 2 niveles de profundidad
+diferentes (0.49 y 1.54 m).
+
+Con la función `str()` podemos ver la estructura del objeto y sus
+diferentes componentes.
+
+``` r
+str(thetao)
+```
+
+    Formal class 'satin' [package "satin"] with 6 slots
+      ..@ lon    : num [1:60] -112 -112 -112 -112 -112 ...
+      ..@ lat    : num [1:61] 22 22.1 22.2 22.2 22.3 ...
+      ..@ data   : num [1:61, 1:60, 1:731, 1:2] 22.9 22.9 23 23.1 23.2 ...
+      ..@ attribs:List of 6
+      .. ..$ title             : chr "thetao"
+      .. ..$ longname          : chr "Temperature"
+      .. ..$ name              : chr "thetao"
+      .. ..$ units             : chr "degrees_C"
+      .. ..$ temporal_range    : chr "daily"
+      .. ..$ spatial_resolution: chr "9.2 km"
+      ..@ period :List of 2
+      .. ..$ tmStart: POSIXct[1:731], format: "2019-01-01" "2019-01-02" ...
+      .. ..$ tmEnd  : POSIXct[1:731], format: "2019-01-01" "2019-01-02" ...
+      ..@ depth  : num [1:2] 0.494 1.541
+
+Podemos extraer los diferentes componentes (“slots”) de este objeto de
+clase S4 usando “@”. Por ejemplo el vector de latitudes `thetao@lat`, o
+los periodos (en este ejemplo solo algunos del inicio y otros del final
+de los 731 días).
 
 ``` r
 head(thetao@period$tmStart); tail(thetao@period$tmStart)
@@ -345,14 +387,18 @@ head(thetao@period$tmStart); tail(thetao@period$tmStart)
     [1] "2020-12-26 UTC" "2020-12-27 UTC" "2020-12-28 UTC" "2020-12-29 UTC"
     [5] "2020-12-30 UTC" "2020-12-31 UTC"
 
-Haremos un mapa para elegir un punto y extraer los valores de
-temperatura en el nivel más superficial
+Hasta aquí solo hemos descrito la estructura de los datos importados y
+como las fechas se convirtieron a una clase formal apropiada
+(`"POSIXct"`). Ahora veremos las ventadas de esto. Para ello primero
+haremos un mapa del primer periodo (por defecto) para elegir un punto y
+extraer los valores de temperatura en el nivel más superficial para
+todos los días contenidos en nuestros datos.
 
 ``` r
 plot(thetao)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-21-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-22-1.png)
 
 Tomemos por ejemplo un pixel a los 26° de lat N y 110° de lon W
 
@@ -364,13 +410,13 @@ dim(sst)
 
     [1]    1 1468
 
-En sst están los valores de temperatura potencial para el punto
-seleccionado, en los 731 díasy para los 5 niveles de profundidad 731
-$\times$ 5 = 3655. Las primeras seis columnas adicionales en sst
-contienen el id del punto o puntos elegidos, las coordenadas de
-latitud-longitud elegidas, las coordenadas del pixel más cercano donde
-hay datos y la distancia entres el punto elegido y el dato devuelto,
-solo como un control
+En `sst` están los valores de temperatura potencial para el punto
+seleccionado, en los 731 días y para los 2 niveles de profundidad 731
+$\times$ 2 = 1462. Las seis columnas adicionales en `sst` contienen el
+id del punto elegido, las coordenadas de latitud-longitud deseadas, las
+coordenadas del pixel más cercano donde hay datos y la distancia entre
+el punto elegido y el dato devuelto (en km), solo como control de
+calidad.
 
 ``` r
 sst[ , 1:10]
@@ -379,8 +425,9 @@ sst[ , 1:10]
       id    x  y d  lon lat       p1      p2       p3       p4
     1  1 -110 26 0 -110  26 21.68557 21.6072 21.40651 21.27906
 
-Para repesentar la serie de tiempo podemos rearreglar nuestros datos
-extraidos de la siguiente manera
+Para representar la serie de tiempo de la temperatura potencial en
+superficie podemos rearreglar los datos extraídos incluyendo el periodo
+correspondiente de la siguiente manera.
 
 ``` r
 fecha <- thetao@period$tmStart
@@ -396,15 +443,20 @@ head(tsm)
     p5 2019-01-05    21.27906
     p6 2019-01-06    21.24976
 
-Figura
+Si graficamos esta nueva tabla vemos como la fecha se ubica en el eje x
+y las etiquetas se ajustan al formato más conveniente (año-mes en este
+caso) para evitar una saturar el gráfico con texto.
 
 ``` r
 plot(tsm, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2))
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-25-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-26-1.png)
 
-Si quisieramos los promedios mensuales
+Ahora, el paquete **lubridate** nos permite manipular de manera sencilla
+las fechas. Por ejemplo, si quisiéramos calcular promedios de
+temperatura por año o mes, necesitaríamos primero extraer de la columna
+fecha esta información.
 
 ``` r
 library(lubridate)
@@ -431,40 +483,62 @@ head(tsm)
     p5 2019-01-05    21.27906   1 2019
     p6 2019-01-06    21.24976   1 2019
 
-Suavizado con promedios móviles
+Ahora el promedio por año podría obtenerse con la función `tapply()` o
+`aggregate()`.
 
 ``` r
-library(smooth)
+tapply(tsm$temperatura, tsm$año, mean)
 ```
 
-    Loading required package: greybox
+        2019     2020 
+    25.20825 25.29060 
 
-    Package "greybox", v2.0.1 loaded.
-
-
-    Attaching package: 'greybox'
-
-    The following object is masked from 'package:lubridate':
-
-        hm
-
-    This is package "smooth", v4.0.2
+En el caso del promedio mensual, sin considera el año sería
 
 ``` r
-sm <- cma(tsm$temperatura, order = 30)
-tsm$sm <- sm$fitted
-
-plot(tsm$fecha, tsm$temperatura, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
-     xlab = "día", ylab = "temperatura")
-lines(tsm$fecha, tsm$sm, lwd = 2)
+aggregate(tsm$temperatura, list(mes = tsm$mes), mean)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-27-1.png)
+       mes        x
+    1    1 21.39482
+    2    2 19.58413
+    3    3 20.10493
+    4    4 21.80930
+    5    5 24.67478
+    6    6 26.80622
+    7    7 29.19718
+    8    8 30.18203
+    9    9 30.63538
+    10  10 29.72811
+    11  11 25.76468
+    12  12 22.78491
 
-Agregar por año mes
+y finalmente, por año
 
 ``` r
-tsm.mens <- aggregate(tsm$temperatura, by = list(mes = tsm$mes, año = tsm$año), mean)
+tapply(tsm$temperatura, list(tsm$mes, tsm$año), mean)
+```
+
+           2019     2020
+    1  21.36710 21.42255
+    2  19.60258 19.56633
+    3  20.55122 19.65863
+    4  21.91614 21.70246
+    5  24.13084 25.21871
+    6  26.40666 27.20578
+    7  29.07128 29.32309
+    8  30.37952 29.98454
+    9  30.43024 30.84051
+    10 28.98196 30.47426
+    11 26.10929 25.42008
+    12 23.13966 22.43016
+
+Estos promedios se pueden también obtener con `aggregate()` que produce
+un *data frame* más apropiado para graficar.
+
+``` r
+tsm.mens <- aggregate(tsm$temperatura, 
+                      by = list(mes = tsm$mes, año = tsm$año), mean)
 tsm.mens
 ```
 
@@ -494,11 +568,46 @@ tsm.mens
     23  11 2020 25.42008
     24  12 2020 22.43016
 
+Figura
+
 ``` r
 plot(as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-")), tsm.mens$x,
-     xlab = "mes", ylab = "temperatura (°C)", type = "b")
+     xlab = "mes", ylab = "Temperatura (°C)", type = "b")
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-29-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-32-1.png)
+
+De igual manera podemos ilustrar el suavizado con promedios móviles
+usando la función `cma()` del paquete **smooth**. En este caso, como el
+vector suavizado queda del mismo tamaño que los datos podemos sobreponer
+ambos explotando la fecha.
+
+``` r
+library(smooth)
+```
+
+    Loading required package: greybox
+
+    Package "greybox", v2.0.1 loaded.
+
+
+    Attaching package: 'greybox'
+
+    The following object is masked from 'package:lubridate':
+
+        hm
+
+    This is package "smooth", v4.0.2
+
+``` r
+sm <- cma(tsm$temperatura, order = 30)
+tsm$sm <- sm$fitted
+
+plot(tsm$fecha, tsm$temperatura, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
+     xlab = "día", ylab = "Temperatura (°C)", las = 1)
+lines(tsm$fecha, tsm$sm, lwd = 2)
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-33-1.png)
 
   
