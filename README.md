@@ -1,2 +1,3 @@
-# Talleres_intermedios
-Talleres intermedios de OceanHackWeek en español
+# README
+
+Talleres intermedios de OceanHackWeek en español, de **Octubre 2024**.
