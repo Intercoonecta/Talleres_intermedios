@@ -44,7 +44,7 @@ summary(dm)  # resumen estadístico
     ##  3rd Qu.: 902.3  
     ##  Max.   :1305.7
 
-El dataset contiene información sobre la distribución de peces en la
+El dataset contiene información sobre la distribución de algas en la
 costa de California. Las variables son: longitud, latitud, temperatura,
 clorofila y altura.
 
