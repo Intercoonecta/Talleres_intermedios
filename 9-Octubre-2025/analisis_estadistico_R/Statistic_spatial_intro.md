@@ -12,7 +12,7 @@ Introducción al análisis espacial
 
 ``` r
 # Cargar datos
-dm <- read.csv("Data/datos_marinos.csv")
+dm <- read.csv("datos_marinos.csv")
 
 head(dm)   # primeras 6 filas
 ```
