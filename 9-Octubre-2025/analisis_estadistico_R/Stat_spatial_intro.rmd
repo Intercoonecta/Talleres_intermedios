@@ -38,13 +38,13 @@ library(ggplot2)
 ```{r read,  echo=T}
 
 # Cargar datos
-dm <- read.csv("Data/datos_marinos.csv")
+dm <- read.csv("datos_marinos.csv")
 
 head(dm)   # primeras 6 filas
 summary(dm)  # resumen estadístico
 
 ```
-El dataset contiene información sobre la distribución de peces en la costa de California. Las variables son: longitud, latitud, temperatura, clorofila y altura. 
+El dataset contiene información sobre algas en la costa de California. Las variables son: longitud, latitud, temperatura, clorofila y altura. 
 
 > ¿Qué tipo de  variables contiene el dataframe?
 
