@@ -15,7 +15,7 @@ especializado de fecha (en el caso de Excel).
 Usualmente se usan solo números, por lo que tendríamos algo así como
 “08-10-2025” (dd-mm-aaaa), aunque en algunos casos podría escribirse
 como “2025/Oct/08” (aaaa/mmm/dd). El tiempo podría estar en una columna
-aparte o combinado con la fecha: “2025-10-08 15:30:58” (aaaa-mm-dd
+aparte o combinado con la fecha: “2025/10/08 15:30:58” (aaaa/mm/dd
 hh:mm:ss).
 
 Lo importante en todos los casos es la consistencia, y sobretodo no
@@ -34,18 +34,19 @@ paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el
 formato no es ambiguo. A continuación se describen algunas de estas
 clases especializadas.
 
-## Clase `"Date"`
+## La clase `"Date"`
 
 Esta es tal vez la clase más sencilla cuando solo tenemos fechas.
 
 ``` r
-fechas <- paste("2025", c("7", "10", "11"), c("13", "18", "25"), sep ="-")
+fechas <- paste(2025, c(7, 10, 11), c(13, 18, 25), sep ="-")
 fechas
 ```
 
     [1] "2025-7-13"  "2025-10-18" "2025-11-25"
 
-En el ejemplo, el vector `fechas` es de clase `"character"`.
+En el ejemplo, aunque parecen fechas, el vector generado es de clase
+`"character"`.
 
 ``` r
 class(fechas)
@@ -76,7 +77,7 @@ unclass(fechas)
 
     [1] 20282 20379 20417
 
-Entonces, considerando que al 1 de febrero de 1970 transcurrieron 31
+Por ejemplo, considerando que al 1 de febrero de 1970 transcurrieron 31
 días desde el origen mencionado antes,
 
 ``` r
@@ -85,35 +86,49 @@ días desde el origen mencionado antes,
 
     [1] "1970-02-01"
 
-Con la función `Sys.time()` podemos obtener la fecha-hora actual de
-acuerdo a la configuración local de nuestra computadora.
+Ahora bien, la función `Sys.time()` devuelve la fecha-hora actual de
+acuerdo a la configuración local de nuestra computadora (en una clase
+diferente que explicaremos más adelante)
 
 ``` r
 ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2025-09-30 17:25:51 MST"
+    [1] "2025-10-06 17:29:18 MST"
 
-Al aplicar la función `as.Date()` la hora se descarta.
+Al convertirla con la función `as.Date()`, evidentemente la hora se
+descarta
 
 ``` r
 as.Date(ahora)
 ```
 
-    [1] "2025-10-01"
+    [1] "2025-10-07"
+
+Las clases más utilizadas en R que permiten guardar la fecha, hora y la
+zona de tiempo, como en el ejemplo previo, son **`"POSIXlt"`** y
+**`"POSIXct"`**.
 
 ## La clase `"POSIXlt"`
 
-Las clases más utilizadas en R que permiten guardar la fecha, hora y la
-zona de tiempo son **`"POSIXlt"`** y **`"POSIXct"`**. La primera
-almacena esta información como una lista de vectores `sec`, `min`,
-`hour` para el tiempo; `mday`, `mon` y `year` para la fecha; `wday` y
-`yday` para el día de la semana y el día del año,
-respectivamente;`isdst`, es una bandera para el horario de verano;
-`zone` es una cadena de texto para la zona de tiempo; y `gmtoff` sería
-el *offset* en segundos del horario GMT. La función `strptime()` nos
-permite convertir una cadena de texto a la clase `"POSIXlt"`.
+Almacena la información como una lista de vectores:
+
+`sec`, `min`, `hour` para el tiempo;
+
+`mday`, `mon` y `year` para la fecha;
+
+`wday` y `yday` para el día de la semana y el día del año,
+respectivamente;
+
+`isdst`, es una bandera para el horario de verano;
+
+`zone` es una cadena de texto para la zona de tiempo;
+
+`gmtoff` sería el *offset* en segundos del horario GMT.
+
+La función `strptime()` nos permite convertir una cadena de texto a la
+clase `"POSIXlt"`.
 
 ``` r
 dt <- strptime("2025-10-08 07:12:30", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
@@ -219,17 +234,33 @@ unclass(psx.ct)
     attr(,"tzone")
     [1] "UTC"
 
-Esto lo podemos comprobar fácilmente.
+Considerando nuevamente el ejemplo anterior, al 1 de febrero de 1970 han
+transcurrido 31 días $\times$ 24 horas $\times$ 60 minutos $\times$ 60
+segundos, es decir 2,678,400 segundos,
 
 ``` r
-# definir origen
-orig <- as.POSIXct("1970-01-01 00:00:00", format = "%Y-%m-%d %H:%M:%S", tz = "UTC") 
-
-# calcular la diferencia entre psx.ct y el origen
-difftime(psx.ct, orig, units = "s")
+31 * 24 * 60 * 60
 ```
 
-    Time difference of 1729149150 secs
+    [1] 2678400
+
+por lo que la función `as.POSIXct()` aplicada a este número nos debería
+devolver dicha fecha:
+
+``` r
+as.POSIXct(2678400) 
+```
+
+    [1] "1970-01-31 17:00:00 MST"
+
+La fecha devuelta resultante no fue la esperada debido a que no se
+especificó la zona de tiempo. La respuesta correcta se obtendría así:
+
+``` r
+as.POSIXct(31 * 24 * 60 * 60 + 1, tz = "UTC")
+```
+
+    [1] "1970-02-01 00:00:01 UTC"
 
 De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente
 para incluirse en *data frames*, mientras que `"POSIXlt"`es una forma
@@ -256,9 +287,10 @@ head(time)
 
     [1] 1546300800 1546387200 1546473600 1546560000 1546646400 1546732800
 
-Inspeccionando un poco el archivo (tecleando ncf en la consola) podemos
-notar que estos números son: “units: seconds since 1970-01-01 00:00:00”,
-por lo que la conversión apropiada sería
+Inspeccionando un poco la información contenida en el archivo netCDF
+(tecleando “ncf” en la consola) podemos notar que estos números son:
+“units: seconds since 1970-01-01 00:00:00”, por lo que la conversión
+apropiada sería
 
 ``` r
 time <- as.POSIXct(time, tz = "UTC", format = "%Y-%m-%d", 
@@ -347,7 +379,7 @@ temperatura en el nivel más superficial
 plot(thetao)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-21-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-23-1.png)
 
 Tomemos por ejemplo un pixel a los 26° de lat N y 110° de lon W
 
@@ -360,8 +392,8 @@ dim(sst)
     [1]    1 1468
 
 En `sst` están los valores de temperatura potencial para el punto
-seleccionado, en los 731 días y para los 5 niveles de profundidad 731
-$\times$ 5 = 3655. Las primeras seis columnas adicionales en `sst`
+seleccionado, en los 731 días y para los 2 niveles de profundidad 731
+$\times$ 2 = 1462. Las primeras seis columnas adicionales en `sst`
 contienen el id del punto o puntos elegidos, las coordenadas de
 latitud-longitud elegidas, las coordenadas del pixel más cercano donde
 hay datos y la distancia entre el punto elegido y el dato devuelto, solo
@@ -407,18 +439,19 @@ head(tsm)
     3   2019-01-03 21.40651
     734 2019-01-03 21.40651
 
-Para graficar la serie de tiempo de temperatura potencial del mar a 0.49
-m de profundidad en el punto anterior usamos la función `plot()`.
+Ahora podemos graficar la serie de tiempo de temperatura potencial del
+mar a 0.49 m de profundidad en el punto anterior usando la función
+`plot()`.
 
 ``` r
 plot(tsm, type = "o", pch = 16, col = rgb(1, 0, 0, 0.2))
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-25-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-27-1.png)
 
 Esta serie se puede suavizar con promedios móviles centrados mediante la
 función `cma()` del paquete **smooth** que tiene la ventaja de no
-producir valores faltantes.
+producir valores faltantes (ver ayuda con `?sma`)
 
 ``` r
 library(smooth)
@@ -429,7 +462,6 @@ library(smooth)
     Package "greybox", v2.0.4 loaded.
 
     This is package "smooth", v4.2.0
-    If you want to know more about the smooth package and forecasting, you can visit my website: https://www.openforecast.org/
 
 ``` r
 sm <- cma(tsm$loc.1, order = 90)
@@ -440,10 +472,11 @@ plot(tsm$fecha, tsm$loc.1, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
 lines(tsm$fecha, tsm$sm, lwd = 2)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-26-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-28-1.png)
 
-Si quisiéramos obtener los promedios mensuales, podríamos extraer el mes
-y el año de la fecha y
+Podemos simplificar aún más esta información, por ejemplo calculando los
+promedios mensuales. Para ello primero extraemos el mes y el año de la
+fecha con funciones del paquete **lubridate**:
 
 ``` r
 library(lubridate)
@@ -474,7 +507,7 @@ head(tsm)
     3   2019-01-03 21.40651 21.42621   1 2019
     734 2019-01-03 21.40651 21.41993   1 2019
 
-Agregar por año mes
+A continuación la tabla se agrega calculando los promedios deseados
 
 ``` r
 tsm.mens <- aggregate(tsm$loc.1, by = list(mes = tsm$mes, año = tsm$año), mean)
@@ -507,16 +540,19 @@ tsm.mens
     23  11 2020 25.41389
     24  12 2020 22.42815
 
+El gráfico correspondiente requiere definir un vector con la posición
+donde queremos poner cada promedio, por ejemplo el día 15 de cada mes
+
 ``` r
 mes <- as.Date(paste(tsm.mens$año, tsm.mens$mes, 15, sep = "-"))
-plot(mes, tsm.mens$x,
-     xlab = "mes", ylab = "temperatura (°C)", type = "b")
+plot(mes, tsm.mens$x, xlab = "mes", ylab = "temperatura (°C)", type = "b")
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-29-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-31-1.png)
 
-Si quisieramos personallizar el espaciamiento de las marcas de
-graduación en x, por ejemplo cada mes
+Si quisiéramos personalizar el espaciamiento de las marcas de graduación
+en x, por ejemplo cada mes, sin perder de vista que tenemos dos años de
+datos, podríamos usar doble eje x:
 
 ``` r
 rng <- range(mes)
@@ -527,6 +563,71 @@ axis.Date(side = 1, at = mes, labels = format(xmes, format = "%b"))
 axis.Date(side = 1, at = xmes[c(1, 13)], labels = c(2019, 2020), line = 2, lwd = 0)
 ```
 
-![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-30-1.png)
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-32-1.png)
 
-  
+Otros resúmenes de la información son posibles, como los promedios
+mensuales (sin importar el año):
+
+``` r
+# promedio mensual
+tapply(tsm$loc.1, tsm$mes, mean)
+```
+
+           1        2        3        4        5        6        7        8 
+    21.39095 19.57168 20.07019 21.73676 24.61104 26.72782 29.14325 30.13666 
+           9       10       11       12 
+    30.59194 29.70621 25.75997 22.78200 
+
+o los promedios anuales:
+
+``` r
+# promedio anual
+tapply(tsm$loc.1, tsm$año, mean)
+```
+
+        2019     2020 
+    25.17215 25.25366 
+
+Por último, regresando a los datos diarios importados antes, podríamos
+obtener promedios (u otros resúmenes, e.g. desviación estándar) de cada
+pixel en la zona de estudio gracias a la información de las fechas en
+dicho objeto:
+
+``` r
+# Promedio temperaturas de cada año
+sst.anual <- satinMean(thetao, by = "%Y")
+sst.anual
+```
+
+    Object of class satin
+
+     Title: thetao 
+     Long name: Temperature 
+     Name: thetao 
+     Units: degrees_C 
+     Temporal range: yearly 
+     Spatial resolution: 9.2 km 
+
+    Data dimensions:
+     61 60 2 
+
+    Data ranges:
+              lon lat   thetao     period    depth
+    min -112.0000  22 21.67558 2019-01-01 0.494025
+    max -107.0833  27 26.89789 2020-12-31 0.494025
+
+quedando las figuras
+
+``` r
+# 2019
+plot(sst.anual, period = 1, zlim = c(21.6, 26.9))
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-36-1.png)
+
+``` r
+# 2020
+plot(sst.anual, period = 2, zlim = c(21.6, 26.9))
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-36-2.png)
