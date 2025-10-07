@@ -95,7 +95,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2025-10-07 14:52:23 MST"
+    [1] "2025-10-07 15:12:59 MST"
 
 Al convertirla con la función `as.Date()`, evidentemente la hora se
 descarta
@@ -116,7 +116,8 @@ Almacena la información como una lista de vectores:
 
 `sec`, `min`, `hour` para el tiempo;
 
-`mday`, `mon` y `year` para la fecha;
+`mday`, `mon` y `year` para la fecha. El mes de 0-11 y el año desde
+1900;
 
 `wday` y `yday` para el día de la semana y el día del año,
 respectivamente;
