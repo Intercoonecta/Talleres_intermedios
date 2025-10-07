@@ -11,7 +11,7 @@ editor: visual
 
 Hablamos de datos temporales cuando las variables que se recolectan tienen asociada una fecha y posiblemente una hora. El uso correcto de estos datos depende de definir con toda claridad el formato en que esta información se almacena. Por ejemplo, en los archivos (ascii o Excel) se puede guardar el año, mes y día en columnas separadas, o combinados en una misma columna como una cadena de texto o bien en un formato especializado de fecha (en el caso de Excel).
 
-Usualmente se usan solo números, por lo que tendríamos algo así como "08-10-2025" (dd-mm-aaaa), aunque en algunos casos podría escribirse como "2025/Oct/08" (aaaa/mmm/dd). El tiempo podría estar en una columna aparte o combinado con la fecha: "2025/10/08 15:30:58" (aaaa/mm/dd hh:mm:ss).
+Usualmente se usan solo números, por lo que tendríamos algo así como "08-10-2025" (dd-mm-aaaa), aunque en algunos casos podría escribirse como "2025/Oct/08" (aaaa/mmm/dd), o incluso 20251008. El tiempo podría estar en una columna aparte o combinado con la fecha: "2025/10/08 15:30:58" (aaaa/mm/dd hh:mm:ss).
 
 Lo importante en todos los casos es la consistencia, y sobretodo no invertir el orden del mes y el día ni escribir indistintamente "Sep", "sep" o "Septiembre" . Es sumamente importante revisar esto antes de importar nuestros datos en R.
 
@@ -67,7 +67,7 @@ Al convertirla con la función `as.Date()`, evidentemente la hora se descarta
 as.Date(ahora)
 ```
 
-Las clases más utilizadas en R que permiten guardar la fecha, hora y la zona de tiempo, como en el ejemplo previo, son **`"POSIXlt"`** y **`"POSIXct"`**.
+Las clases más utilizadas en R que permiten guardar la fecha, hora y la zona de tiempo, como en el ejemplo previo, son **`"POSIXlt"`** y **`"POSIXct"`**,
 
 ## La clase `"POSIXlt"`
 
@@ -93,7 +93,7 @@ dt
 class(dt)
 ```
 
-Pare ver los vectores mencionados antes, usamos nuevamente la función `unclass()`.
+Para ver los vectores mencionados antes, usamos nuevamente la función `unclass()`.
 
 ```{r}
 unclass(dt)
@@ -102,9 +102,9 @@ unclass(dt)
 También podemos usar la función `as.POSIXlt()` para convertir una cadena de texto a la clase `"POSIXlt"`. En este caso, si no lo indicamos la zona de tiempo se ajustará de acuerdo a nuestra configuración local.
 
 ```{r}
-psx.lt <- as.POSIXlt("2025-10-08 07:12:30")
-psx.lt
-class(psx.lt)
+PSXlt <- as.POSIXlt("2025-10-08 07:12:30")
+PSXlt
+class(PSXlt)
 ```
 
 ## La clase `"POSIXct"`
@@ -112,15 +112,15 @@ class(psx.lt)
 Esta clase representa el número de segundos desde el primero de enero de 1970 (en UTC) como un vector numérico.
 
 ```{r}
-psx.ct <- as.POSIXct("2024-10-17 07:12:30", tz = "UTC")
-psx.ct
-class(psx.ct)
+PSXct <- as.POSIXct("2024-10-17 07:12:30", tz = "UTC")
+PSXct
+class(PSXct)
 ```
 
 Aplicando la función `unclass()` podemos ver el número de segundos transcurridos desde el origen mencionado antes.
 
 ```{r}
-unclass(psx.ct)
+unclass(PSXct)
 ```
 
 Considerando nuevamente el ejemplo anterior, al 1 de febrero de 1970 han transcurrido 31 días $\times$ 24 horas $\times$ 60 minutos $\times$ 60 segundos, es decir 2,678,400 segundos,
@@ -141,13 +141,13 @@ La fecha devuelta resultante no fue la esperada debido a que no se especificó l
 as.POSIXct(31 * 24 * 60 * 60 + 1, tz = "UTC")
 ```
 
-De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente para incluirse en *data frames*, mientras que `"POSIXlt"`es una forma más fácil de leer para el humano.
+De acuerdo con la ayuda de R, la clase `"POSIXlt"` es más fácil de leer para el humano, mientras que `"POSIXct"` es más conveniente para incluirse en *data frames*.
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
 
 Para ilustrar la manipulación de datos temporales utilizaremos información del producto *Global Ocean Physics Reanalysis* (<https://doi.org/10.48670/moi-00021>) de Copernicus (<https://marine.copernicus.eu/>).
 
-El archivo netCDF proporcionado contiene datos diarios de temperatura potencial para una región del Golfo de California, México. El periodo abarca del primero de enero de 2019 al 31 de diciembre de 2020. En este archivo la información de la fecha podemos verla con el siguiente código
+El archivo netCDF proporcionado contiene datos diarios de temperatura potencial para una región del Golfo de California, México. El periodo abarca del 1o de enero de 2019 al 31 de diciembre de 2020. En este archivo la información de las fechas podemos verla con el siguiente código
 
 ```{r}
 library(ncdf4)
@@ -164,7 +164,7 @@ time <- as.POSIXct(time, tz = "UTC", format = "%Y-%m-%d",
 head(time)
 ```
 
-El proceso anterior se encuentra codificado en la función `read.cmems()` del paquete **satin**, que además prevee otros casos en los que el origen o las unidades (horas, días) pudieran ser diferentes.
+El proceso anterior se encuentra codificado en la función `read.cmems()` del paquete **satin**, que además prevee otros casos en los que el origen o las unidades pudieran ser diferentes (horas, días).
 
 ```{r}
 # cargar paquete devtools
@@ -201,7 +201,7 @@ Podemos ver que tenemos datos diarios de temperatura en °C, con una resolución
 head(thetao@period$tmStart); tail(thetao@period$tmStart)
 ```
 
-Haremos un mapa para elegir un punto y extraer los valores de temperatura en el nivel más superficial
+Haremos un mapa del primer día presente en los datos para elegir un punto y extraer los valores de temperatura en el nivel más superficial
 
 ```{r}
 plot(thetao)
@@ -236,12 +236,11 @@ formatXTP <- function(pts, plot.error = FALSE){
   ans <- data.frame(fecha = att$attribs$period$tmStart, t(pts[, 7:ncols]))
   rownames(ans) <- NULL
   names(ans)[2:(npts+1)] <- paste("loc", 1:npts, sep = ".")
-  ans <- ans[order(ans$fecha), ]
   ans
 }
 
 tsm <- formatXTP(sst)
-
+tsm <- tsm[1:731, ]
 head(tsm)
 ```
 
@@ -255,7 +254,7 @@ Esta serie se puede suavizar con promedios móviles centrados mediante la funci�
 
 ```{r}
 library(smooth)
-sm <- cma(tsm$loc.1, order = 90)
+sm <- cma(tsm$loc.1, order = 30)
 tsm$sm <- sm$fitted
 
 plot(tsm$fecha, tsm$loc.1, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
@@ -328,4 +327,31 @@ plot(sst.anual, period = 1, zlim = c(21.6, 26.9))
 
 # 2020
 plot(sst.anual, period = 2, zlim = c(21.6, 26.9))
+```
+
+También podríamos calcular anomalías mensuales, aunque en este caso solo tenemos dos años para calcular el año promedio
+
+```{r}
+# año promedio, por lo regular se recomiendo un promedio de 30 años
+yrPromedio <-  satinMean(thetao, by = "%m")
+# promedios mensuales
+sstMensual <-  satinMean(thetao, by = "%Y-%m")
+
+# anomalías mensuales
+anom <- anomaly(sstMensual, yrPromedio)
+```
+
+Mapa de anomalías en enero
+
+```{r}
+data(dmap)
+plot(anom, period = 1, map = dmap, map.col = "grey90", map.outline = "grey", 
+     zlim = c(-1, 1), scheme = c("blue", "white", "red"), col.sep = 0.1)
+```
+
+Y en agosto...
+
+```{r}
+plot(anom, period = 8, map = dmap, map.col = "grey90", map.outline = "grey", 
+     zlim = c(-1, 1), scheme = c("blue", "white", "red"), col.sep = 0.1)
 ```

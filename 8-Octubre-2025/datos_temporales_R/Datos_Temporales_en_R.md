@@ -14,9 +14,9 @@ especializado de fecha (en el caso de Excel).
 
 Usualmente se usan solo números, por lo que tendríamos algo así como
 “08-10-2025” (dd-mm-aaaa), aunque en algunos casos podría escribirse
-como “2025/Oct/08” (aaaa/mmm/dd). El tiempo podría estar en una columna
-aparte o combinado con la fecha: “2025/10/08 15:30:58” (aaaa/mm/dd
-hh:mm:ss).
+como “2025/Oct/08” (aaaa/mmm/dd), o incluso 20251008. El tiempo podría
+estar en una columna aparte o combinado con la fecha: “2025/10/08
+15:30:58” (aaaa/mm/dd hh:mm:ss).
 
 Lo importante en todos los casos es la consistencia, y sobretodo no
 invertir el orden del mes y el día ni escribir indistintamente “Sep”,
@@ -95,7 +95,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2025-10-06 17:29:18 MST"
+    [1] "2025-10-07 14:52:23 MST"
 
 Al convertirla con la función `as.Date()`, evidentemente la hora se
 descarta
@@ -108,7 +108,7 @@ as.Date(ahora)
 
 Las clases más utilizadas en R que permiten guardar la fecha, hora y la
 zona de tiempo, como en el ejemplo previo, son **`"POSIXlt"`** y
-**`"POSIXct"`**.
+**`"POSIXct"`**,
 
 ## La clase `"POSIXlt"`
 
@@ -143,7 +143,7 @@ class(dt)
 
     [1] "POSIXlt" "POSIXt" 
 
-Pare ver los vectores mencionados antes, usamos nuevamente la función
+Para ver los vectores mencionados antes, usamos nuevamente la función
 `unclass()`.
 
 ``` r
@@ -193,14 +193,14 @@ de texto a la clase `"POSIXlt"`. En este caso, si no lo indicamos la
 zona de tiempo se ajustará de acuerdo a nuestra configuración local.
 
 ``` r
-psx.lt <- as.POSIXlt("2025-10-08 07:12:30")
-psx.lt
+PSXlt <- as.POSIXlt("2025-10-08 07:12:30")
+PSXlt
 ```
 
     [1] "2025-10-08 07:12:30 MST"
 
 ``` r
-class(psx.lt)
+class(PSXlt)
 ```
 
     [1] "POSIXlt" "POSIXt" 
@@ -211,14 +211,14 @@ Esta clase representa el número de segundos desde el primero de enero de
 1970 (en UTC) como un vector numérico.
 
 ``` r
-psx.ct <- as.POSIXct("2024-10-17 07:12:30", tz = "UTC")
-psx.ct
+PSXct <- as.POSIXct("2024-10-17 07:12:30", tz = "UTC")
+PSXct
 ```
 
     [1] "2024-10-17 07:12:30 UTC"
 
 ``` r
-class(psx.ct)
+class(PSXct)
 ```
 
     [1] "POSIXct" "POSIXt" 
@@ -227,7 +227,7 @@ Aplicando la función `unclass()` podemos ver el número de segundos
 transcurridos desde el origen mencionado antes.
 
 ``` r
-unclass(psx.ct)
+unclass(PSXct)
 ```
 
     [1] 1729149150
@@ -262,9 +262,9 @@ as.POSIXct(31 * 24 * 60 * 60 + 1, tz = "UTC")
 
     [1] "1970-02-01 00:00:01 UTC"
 
-De acuerdo con la ayuda de R, la clase `"POSIXct"` es más conveniente
-para incluirse en *data frames*, mientras que `"POSIXlt"`es una forma
-más fácil de leer para el humano.
+De acuerdo con la ayuda de R, la clase `"POSIXlt"` es más fácil de leer
+para el humano, mientras que `"POSIXct"` es más conveniente para
+incluirse en *data frames*.
 
 ## Manipulación de datos temporales: temperatura potencial del mar diaria
 
@@ -275,8 +275,9 @@ información del producto *Global Ocean Physics Reanalysis*
 
 El archivo netCDF proporcionado contiene datos diarios de temperatura
 potencial para una región del Golfo de California, México. El periodo
-abarca del primero de enero de 2019 al 31 de diciembre de 2020. En este
-archivo la información de la fecha podemos verla con el siguiente código
+abarca del 1o de enero de 2019 al 31 de diciembre de 2020. En este
+archivo la información de las fechas podemos verla con el siguiente
+código
 
 ``` r
 library(ncdf4)
@@ -303,7 +304,7 @@ head(time)
 
 El proceso anterior se encuentra codificado en la función `read.cmems()`
 del paquete **satin**, que además prevee otros casos en los que el
-origen o las unidades (horas, días) pudieran ser diferentes.
+origen o las unidades pudieran ser diferentes (horas, días).
 
 ``` r
 # cargar paquete devtools
@@ -372,8 +373,8 @@ head(thetao@period$tmStart); tail(thetao@period$tmStart)
     [1] "2020-12-26 UTC" "2020-12-27 UTC" "2020-12-28 UTC" "2020-12-29 UTC"
     [5] "2020-12-30 UTC" "2020-12-31 UTC"
 
-Haremos un mapa para elegir un punto y extraer los valores de
-temperatura en el nivel más superficial
+Haremos un mapa del primer día presente en los datos para elegir un
+punto y extraer los valores de temperatura en el nivel más superficial
 
 ``` r
 plot(thetao)
@@ -422,22 +423,21 @@ formatXTP <- function(pts, plot.error = FALSE){
   ans <- data.frame(fecha = att$attribs$period$tmStart, t(pts[, 7:ncols]))
   rownames(ans) <- NULL
   names(ans)[2:(npts+1)] <- paste("loc", 1:npts, sep = ".")
-  ans <- ans[order(ans$fecha), ]
   ans
 }
 
 tsm <- formatXTP(sst)
-
+tsm <- tsm[1:731, ]
 head(tsm)
 ```
 
-             fecha    loc.1
-    1   2019-01-01 21.68557
-    732 2019-01-01 21.68557
-    2   2019-01-02 21.60720
-    733 2019-01-02 21.60720
-    3   2019-01-03 21.40651
-    734 2019-01-03 21.40651
+           fecha    loc.1
+    1 2019-01-01 21.68557
+    2 2019-01-02 21.60720
+    3 2019-01-03 21.40651
+    4 2019-01-04 21.27906
+    5 2019-01-05 21.27906
+    6 2019-01-06 21.24976
 
 Ahora podemos graficar la serie de tiempo de temperatura potencial del
 mar a 0.49 m de profundidad en el punto anterior usando la función
@@ -464,7 +464,7 @@ library(smooth)
     This is package "smooth", v4.2.0
 
 ``` r
-sm <- cma(tsm$loc.1, order = 90)
+sm <- cma(tsm$loc.1, order = 30)
 tsm$sm <- sm$fitted
 
 plot(tsm$fecha, tsm$loc.1, type = "b", pch = 16, col = rgb(1, 0, 0, 0.2),
@@ -499,13 +499,13 @@ tsm$año <- year(tsm$fecha)
 head(tsm)
 ```
 
-             fecha    loc.1       sm mes  año
-    1   2019-01-01 21.68557 21.44759   1 2019
-    732 2019-01-01 21.68557 21.44300   1 2019
-    2   2019-01-02 21.60720 21.43800   1 2019
-    733 2019-01-02 21.60720 21.43200   1 2019
-    3   2019-01-03 21.40651 21.42621   1 2019
-    734 2019-01-03 21.40651 21.41993   1 2019
+           fecha    loc.1       sm mes  año
+    1 2019-01-01 21.68557 21.49521   1 2019
+    2 2019-01-02 21.60720 21.50724   1 2019
+    3 2019-01-03 21.40651 21.51571   1 2019
+    4 2019-01-04 21.27906 21.52323   1 2019
+    5 2019-01-05 21.27906 21.53008   1 2019
+    6 2019-01-06 21.24976 21.53431   1 2019
 
 A continuación la tabla se agrega calculando los promedios deseados
 
@@ -515,30 +515,30 @@ tsm.mens
 ```
 
        mes  año        x
-    1    1 2019 21.36145
-    2    2 2019 19.58896
-    3    3 2019 20.51031
-    4    4 2019 21.86532
-    5    5 2019 24.06840
-    6    6 2019 26.31480
-    7    7 2019 29.01691
-    8    8 2019 30.33844
-    9    9 2019 30.38984
-    10  10 2019 28.95778
-    11  11 2019 26.10605
-    12  12 2019 23.13585
-    13   1 2020 21.42046
-    14   2 2020 19.55499
-    15   3 2020 19.63006
-    16   4 2020 21.60820
-    17   5 2020 25.15369
-    18   6 2020 27.14084
-    19   7 2020 29.26959
-    20   8 2020 29.93487
-    21   9 2020 30.79404
-    22  10 2020 30.45464
-    23  11 2020 25.41389
-    24  12 2020 22.42815
+    1    1 2019 21.36710
+    2    2 2019 19.60258
+    3    3 2019 20.55122
+    4    4 2019 21.91614
+    5    5 2019 24.13084
+    6    6 2019 26.40666
+    7    7 2019 29.07128
+    8    8 2019 30.37952
+    9    9 2019 30.43024
+    10  10 2019 28.98196
+    11  11 2019 26.10929
+    12  12 2019 23.13966
+    13   1 2020 21.42255
+    14   2 2020 19.56633
+    15   3 2020 19.65863
+    16   4 2020 21.70246
+    17   5 2020 25.21871
+    18   6 2020 27.20578
+    19   7 2020 29.32309
+    20   8 2020 29.98454
+    21   9 2020 30.84051
+    22  10 2020 30.47426
+    23  11 2020 25.42008
+    24  12 2020 22.43016
 
 El gráfico correspondiente requiere definir un vector con la posición
 donde queremos poner cada promedio, por ejemplo el día 15 de cada mes
@@ -574,9 +574,9 @@ tapply(tsm$loc.1, tsm$mes, mean)
 ```
 
            1        2        3        4        5        6        7        8 
-    21.39095 19.57168 20.07019 21.73676 24.61104 26.72782 29.14325 30.13666 
+    21.39482 19.58413 20.10493 21.80930 24.67478 26.80622 29.19718 30.18203 
            9       10       11       12 
-    30.59194 29.70621 25.75997 22.78200 
+    30.63538 29.72811 25.76468 22.78491 
 
 o los promedios anuales:
 
@@ -586,7 +586,7 @@ tapply(tsm$loc.1, tsm$año, mean)
 ```
 
         2019     2020 
-    25.17215 25.25366 
+    25.20825 25.29060 
 
 Por último, regresando a los datos diarios importados antes, podríamos
 obtener promedios (u otros resúmenes, e.g. desviación estándar) de cada
@@ -631,3 +631,35 @@ plot(sst.anual, period = 2, zlim = c(21.6, 26.9))
 ```
 
 ![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-36-2.png)
+
+También podríamos calcular anomalías mensuales, aunque en este caso solo
+tenemos dos años para calcular el año promedio
+
+``` r
+# año promedio, por lo regular se recomiendo un promedio de 30 años
+yrPromedio <-  satinMean(thetao, by = "%m")
+# promedios mensuales
+sstMensual <-  satinMean(thetao, by = "%Y-%m")
+
+# anomalías mensuales
+anom <- anomaly(sstMensual, yrPromedio)
+```
+
+Mapa de anomalías en enero
+
+``` r
+data(dmap)
+plot(anom, period = 1, map = dmap, map.col = "grey90", map.outline = "grey", 
+     zlim = c(-1, 1), scheme = c("blue", "white", "red"), col.sep = 0.1)
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-38-1.png)
+
+Y en agosto…
+
+``` r
+plot(anom, period = 8, map = dmap, map.col = "grey90", map.outline = "grey", 
+     zlim = c(-1, 1), scheme = c("blue", "white", "red"), col.sep = 0.1)
+```
+
+![](Datos_Temporales_en_R_files/figure-commonmark/unnamed-chunk-39-1.png)
