@@ -23,6 +23,8 @@ invertir el orden del mes y el día ni escribir indistintamente “Sep”,
 “sep” o “Septiembre” . Es sumamente importante revisar esto antes de
 importar nuestros datos en R.
 
+<img src="fechas.jpg" data-fig-align="center" width="266" />
+
 Al importar en R desde archivos ascii con la función `read.table()`, la
 clase de la variable con la fecha será `"character"`, lo cual
 dificultará su uso en gráficos o para realizar operaciones, por lo que
@@ -93,7 +95,7 @@ ahora <- Sys.time()
 ahora
 ```
 
-    [1] "2025-10-08 08:11:55 MST"
+    [1] "2025-10-08 08:13:45 MST"
 
 Al convertirla con la función `as.Date()`, evidentemente la hora se
 descarta
