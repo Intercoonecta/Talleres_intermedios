@@ -15,8 +15,6 @@ Usualmente se usan solo números, por lo que tendríamos algo así como "08-10-2
 
 Lo importante en todos los casos es la consistencia, y sobretodo no invertir el orden del mes y el día ni escribir indistintamente "Sep", "sep" o "Septiembre" . Es sumamente importante revisar esto antes de importar nuestros datos en R.
 
-![](fechas.jpg){fig-align="center" width="266"}
-
 Al importar en R desde archivos ascii con la función `read.table()`, la clase de la variable con la fecha será `"character"`, lo cual dificultará su uso en gráficos o para realizar operaciones, por lo que debemos convertirlos a una clase apropiada para fecha o fecha-tiempo. En cambio, al importar archivos Excel con la función `read_excel()` del paquete **readxl** usualmente ya pasan como clase `POSIXct`, si el formato no es ambiguo. A continuación se describen algunas de estas clases especializadas.
 
 ## La clase `"Date"`
