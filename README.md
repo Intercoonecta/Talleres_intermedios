@@ -1,11 +1,8 @@
 # README
 
-Tutoriales de los Talleres intermedios de [OceanHackWeek en español](https://intercoonecta.github.io).
+Tutoriales de los **Talleres intermedios** de [OceanHackWeek en español](https://intercoonecta.github.io).
 
-Los tutoriales para el evento de **Octubre 2025** se encuentran en la rama ("branch") principal del repositorio (`main`), y están visibles aquí por defecto.
+Los tutoriales de cada evento están disponibles en una rama ("branch") del repositorio, por año:
 
-## Años anteriores
-
-Los tutoriales de años anteriores están disponibles en una rama ("branch") del repositorio, por año:
-
+- [2025](https://github.com/Intercoonecta/Talleres_intermedios/tree/ohwe25)
 - [2024](https://github.com/Intercoonecta/Talleres_intermedios/tree/ohwe24)
